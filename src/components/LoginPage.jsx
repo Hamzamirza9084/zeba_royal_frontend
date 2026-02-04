@@ -1,7 +1,51 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  
+  // 1. Initialize State for form data
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+
+  // 2. Function to handle typing
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 3. Submit logic
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await axios.post('/api/auth/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data && response.data.token) {
+        // Save user info and token to local storage
+        localStorage.setItem('user', JSON.stringify(response.data));
+        
+        // Alert success
+        alert("Login Successful!");
+        
+        // Redirect based on role
+        if (response.data.role === 'admin') {
+           navigate('/admin'); 
+        } else {
+           navigate('/colleges');
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Invalid Email or Password");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-off-white font-display text-deep-green overflow-hidden flex">
       {/* Left Section: Visual & Branding (Hidden on mobile) */}
@@ -15,7 +59,7 @@ const LoginPage = () => {
 
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center">
           <div className="w-full max-w-md aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl relative bg-[#E6E2D3] flex items-center justify-center">
-             {/* Decorative Elements matching your screenshot style */}
+             {/* Decorative Elements */}
              <div className="absolute top-10 right-10 w-40 h-40 bg-[#F5B5C5] rounded-full opacity-80"></div>
              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-48 h-24 bg-[#F28C44] rounded-t-full"></div>
              <div className="relative z-10 text-6xl rotate-12">🌿</div>
@@ -47,14 +91,18 @@ const LoginPage = () => {
             <p className="text-deep-green/60 font-medium">Log in to continue your preparation journey.</p>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-bold mb-2" htmlFor="email">Email Address</label>
               <input 
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-light-green focus:border-deep-green outline-none transition-all bg-off-white/30" 
                 id="email" 
                 placeholder="name@example.com" 
-                type="email" 
+                type="email"
+                required 
               />
             </div>
 
@@ -64,21 +112,18 @@ const LoginPage = () => {
                 <a className="text-xs font-bold hover:text-primary transition-colors" href="#">Forgot Password?</a>
               </div>
               <input 
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-light-green focus:border-light-green outline-none transition-all bg-off-white/30" 
                 id="password" 
                 placeholder="••••••••" 
-                type="password" 
+                type="password"
+                required 
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <input 
-                className="size-4 rounded border-gray-300 text-deep-green focus:ring-light-green" 
-                id="remember" 
-                type="checkbox" 
-              />
-              <label className="text-sm font-medium text-deep-green/70" htmlFor="remember">Remember for 30 days</label>
-            </div>
+            
 
             <button 
               className="w-full h-14 bg-primary text-deep-green font-extrabold rounded-xl border border-deep-green shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(52,121,40,1)] transition-all"
@@ -88,25 +133,9 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="relative my-10">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-100"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-4 text-deep-green/40 font-bold tracking-widest">Or continue with</span>
-            </div>
-          </div>
+            
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-gray-100 hover:bg-gray-50 transition-colors font-bold text-sm">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-              Google
-            </button>
-            <button className="flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-gray-100 hover:bg-gray-50 transition-colors font-bold text-sm">
-              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5" alt="Facebook" />
-              Facebook
-            </button>
-          </div>
+        
 
           <p className="mt-10 text-center text-sm font-medium text-deep-green/60">
             Don't have an account? 

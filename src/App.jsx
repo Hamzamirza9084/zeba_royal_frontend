@@ -27,8 +27,10 @@ function App() {
         } />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        {/* New Route */}
-        <Route path="/colleges" element={<MainLayout><AdminAddUniversity /></MainLayout>} />
+        <Route path="/colleges" element={<MainLayout><CollegeSearch /></MainLayout>} />
+        
+        {/* Admin Route */}
+        <Route path="/admin" element={<AdminAddUniversity />} />
       </Routes>
     </Router>
   );

@@ -1,7 +1,53 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  
+  // 1. Initialize State for the form data
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  // 2. Function to handle typing in inputs
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 3. Function to submit data to backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      // Backend expects: name, email, phone, password
+      const response = await axios.post('/api/auth/register', {
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phoneNumber,
+        password: formData.password
+      });
+
+      if (response.data) {
+        alert("Registration Successful! Please Login.");
+        navigate('/login'); 
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Registration failed");
+    }
+  };
+
   return (
     <div className="bg-off-white font-display text-deep-green min-h-screen">
       <main className="w-full min-h-screen flex flex-col lg:flex-row">
@@ -61,37 +107,80 @@ const RegisterPage = () => {
               <p className="text-deep-green/60 font-medium">Join the thousands of students already preparing with us.</p>
             </div>
 
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={(e) => e.preventDefault()}>
+            {/* Changed onSubmit to execute handleSubmit */}
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={handleSubmit}>
               <div className="md:col-span-2">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-deep-green/40 mb-2 border-b border-light-green pb-2">Basic Information</h3>
               </div>
               
               <div className="flex flex-col gap-1.5 md:col-span-2">
                 <label className="text-sm font-bold text-deep-green/80 ml-1">Full Name</label>
-                <input className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" placeholder="John Doe" type="text" />
+                <input 
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  placeholder="John Doe" 
+                  type="text" 
+                  required
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-bold text-deep-green/80 ml-1">Email Address</label>
-                <input className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" placeholder="john@example.com" type="email" />
+                <input 
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  placeholder="john@example.com" 
+                  type="email" 
+                  required
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-bold text-deep-green/80 ml-1">Phone Number</label>
-                <input className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" placeholder="+1 (555) 000-0000" type="tel" />
+                <input 
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  placeholder="+1 (555) 000-0000" 
+                  type="tel" 
+                  required
+                />
               </div>
-
-           
-
-              
 
               <div className="flex flex-col gap-1.5 md:col-span-2">
                 <label className="text-sm font-bold text-deep-green/80 ml-1">Password</label>
-                <input className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" placeholder="••••••••" type="password" />
+                <input 
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  placeholder="••••••••" 
+                  type="password" 
+                  required
+                />
+              </div>
+
+              {/* ADDED MISSING CONFIRM PASSWORD FIELD */}
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <label className="text-sm font-bold text-deep-green/80 ml-1">Confirm Password</label>
+                <input 
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  placeholder="••••••••" 
+                  type="password" 
+                  required
+                />
               </div>
 
               <div className="md:col-span-2">
-                <button className="w-full h-14 bg-primary text-deep-green font-bold text-lg rounded-xl shadow-[0px_4px_0px_0px_#347928] hover:translate-y-[2px] hover:shadow-[0px_2px_0px_0px_#347928] active:translate-y-[4px] active:shadow-none transition-all mt-4">
+                <button type="submit" className="w-full h-14 bg-primary text-deep-green font-bold text-lg rounded-xl shadow-[0px_4px_0px_0px_#347928] hover:translate-y-[2px] hover:shadow-[0px_2px_0px_0px_#347928] active:translate-y-[4px] active:shadow-none transition-all mt-4">
                   Create Account
                 </button>
               </div>

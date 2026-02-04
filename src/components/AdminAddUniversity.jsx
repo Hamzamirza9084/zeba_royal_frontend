@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // --- Reusable Styled Components ---
 
@@ -35,6 +37,8 @@ const StyledSelect = ({ label, options, ...props }) => (
 // --- Main Admin Component ---
 
 const AdminAddUniversity = () => {
+  const navigate = useNavigate();
+
   // Comprehensive Form State
   const [formData, setFormData] = useState({
     // University Info
@@ -53,7 +57,7 @@ const AdminAddUniversity = () => {
     gapLimit: "",
     
     // English Requirements
-    englishTests: "IELTS",
+    englishTests: "",
     minScoreOverall: "",
     minScoreSection: "",
     
@@ -62,7 +66,7 @@ const AdminAddUniversity = () => {
     courseLevel: "Postgraduate (PG)",
     duration: "",
     tuitionFee: "",
-    intakes: "Sep 2025",
+    intakes: "",
     
     // Additional
     casPriority: "Medium",
@@ -72,6 +76,31 @@ const AdminAddUniversity = () => {
   });
 
   const [tagInput, setTagInput] = useState("");
+
+  // --- SECURITY CHECK: Redirect if not Admin ---
+  useEffect(() => {
+    const checkAdminStatus = () => {
+      const userString = localStorage.getItem('user');
+      
+      if (!userString) {
+        // No user logged in
+        alert("Please login as an Admin to access this page.");
+        navigate('/login'); // Or '/' depending on your route
+        return;
+      }
+
+      const user = JSON.parse(userString);
+
+      // Check for token and 'admin' role
+      if (!user.token || user.role !== 'admin') {
+        alert("Access Denied: You do not have permission to view this page.");
+        navigate('/'); // Redirect to landing page
+      }
+    };
+
+    checkAdminStatus();
+  }, [navigate]);
+  // ------------------------------------------------
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,6 +117,46 @@ const AdminAddUniversity = () => {
 
   const removeTag = (tagToRemove) => {
     setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "", country: "", city: "", ranking: "", website: "",
+      minCgpa: "", acceptedDegrees: "", acceptedBackgrounds: "", maxBacklogs: "",
+      gapAccepted: "No", gapLimit: "", englishTests: "", minScoreOverall: "", minScoreSection: "",
+      courseName: "", courseLevel: "Postgraduate (PG)", duration: "", tuitionFee: "", intakes: "",
+      casPriority: "Medium", internalProcessing: "No", tags: []
+    });
+    setTagInput("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Get the logged-in user from storage
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Redundant check (safe practice)
+    if (!user || !user.token || user.role !== 'admin') {
+      alert("You must be logged in as Admin to do this.");
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`, // Send token in header
+        },
+      };
+
+      await axios.post('/api/universities', formData, config);
+      
+      alert("University Added Successfully!");
+      resetForm();
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Failed to add university");
+    }
   };
 
   return (
@@ -107,7 +176,7 @@ const AdminAddUniversity = () => {
             <p className="text-deep-green/60 mt-2 font-medium">Enter detailed admission rules and course information.</p>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             
             {/* 1. University Information */}
             <section className="bg-white p-6 rounded-2xl border-2 border-light-green/50 shadow-sm">
@@ -206,6 +275,7 @@ const AdminAddUniversity = () => {
                 />
                 <button 
                   onClick={addTag}
+                  type="button" // Prevent form submission
                   className="px-6 rounded-xl bg-deep-green text-white font-bold hover:bg-deep-green/90 transition-colors shadow-lg"
                 >
                   Add
@@ -222,7 +292,7 @@ const AdminAddUniversity = () => {
                       className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-light-green rounded-lg text-xs font-bold text-deep-green shadow-sm"
                     >
                       {tag}
-                      <button onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
                         <span className="material-symbols-outlined text-[14px]">close</span>
                       </button>
                     </motion.span>
@@ -233,11 +303,15 @@ const AdminAddUniversity = () => {
 
             {/* Sticky Actions Footer */}
             <div className="sticky bottom-0 bg-off-white/95 backdrop-blur-sm py-4 border-t border-deep-green/10 flex items-center gap-4 z-20">
-              <button className="flex-1 py-4 rounded-xl bg-primary text-deep-green text-lg font-extrabold border-2 border-deep-green shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(52,121,40,1)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2">
+              <button type="submit" className="flex-1 py-4 rounded-xl bg-primary text-deep-green text-lg font-extrabold border-2 border-deep-green shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(52,121,40,1)] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2">
                 <span className="material-symbols-outlined">save</span>
                 Save Program
               </button>
-              <button className="px-8 py-4 rounded-xl border-2 border-deep-green text-deep-green font-bold hover:bg-light-green/20 transition-colors">
+              <button 
+                type="button" 
+                onClick={resetForm}
+                className="px-8 py-4 rounded-xl border-2 border-deep-green text-deep-green font-bold hover:bg-light-green/20 transition-colors"
+              >
                 Reset
               </button>
             </div>
@@ -297,13 +371,13 @@ const AdminAddUniversity = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-8 relative z-10 min-h-[24px]">
-             {/* Auto-generated tags based on inputs */}
-             {formData.ranking && <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">{formData.ranking}</span>}
-             {formData.gapAccepted === "Yes" && <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">Gap Accepted</span>}
-             {/* Custom Tags */}
-             {formData.tags.map(tag => (
+              {/* Auto-generated tags based on inputs */}
+              {formData.ranking && <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">{formData.ranking}</span>}
+              {formData.gapAccepted === "Yes" && <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">Gap Accepted</span>}
+              {/* Custom Tags */}
+              {formData.tags.map(tag => (
                 <span key={tag} className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">{tag}</span>
-             ))}
+              ))}
           </div>
 
           <button className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-bold bg-gray-50 flex items-center justify-center gap-2 relative z-10 cursor-not-allowed opacity-70">
