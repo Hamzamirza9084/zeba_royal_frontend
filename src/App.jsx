@@ -1,15 +1,34 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import LandingPage from './components/LandingPage';
 import Footer from './components/Footer';
+import LoginPage from './components/LoginPage';
+
+// Layout wrapper for pages that include Header/Footer
+const MainLayout = ({ children }) => (
+  <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-deep-green dark:text-off-white overflow-x-hidden">
+    <Header />
+    {children}
+    <Footer />
+  </div>
+);
 
 function App() {
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-deep-green dark:text-off-white overflow-x-hidden">
-      <Header />
-      <LandingPage />
-      <Footer />
-    </div>
+    <Router>
+      <Routes>
+        {/* Landing Page Route */}
+        <Route path="/" element={
+          <MainLayout>
+            <LandingPage />
+          </MainLayout>
+        } />
+
+        {/* Login Page Route (Usually doesn't have Header/Footer) */}
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </Router>
   );
 }
 

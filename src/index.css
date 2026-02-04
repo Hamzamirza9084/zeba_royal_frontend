@@ -1,6 +1,22 @@
 @import "tailwindcss";
 
-/* Optional: Add smooth scrolling globally */
+@theme {
+  --color-primary: #FCCD2A;
+  --color-deep-green: #347928;
+  --color-light-green: #C0EBA6;
+  --color-off-white: #FFFBE6;
+  --color-background-light: #FFFBE6;
+  --color-background-dark: #1a3c14;
+  
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Noto Sans", sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
+}
+
+/* Now you can use @apply with the newly defined variables */
+body {
+  @apply bg-background-light text-deep-green font-display;
 }
