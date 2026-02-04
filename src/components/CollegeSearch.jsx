@@ -41,9 +41,9 @@ const colleges = [
   }
 ];
 
-// Reusable Input Component matching RegisterPage.jsx style
-const StyledInput = ({ label, type = "text", placeholder, ...props }) => (
-  <div className="flex flex-col gap-1.5">
+// Reusable Input Component
+const StyledInput = ({ label, type = "text", placeholder, className, ...props }) => (
+  <div className={`flex flex-col gap-1.5 ${className}`}>
     {label && <label className="text-xs font-bold text-deep-green/80 ml-1 uppercase tracking-wide">{label}</label>}
     <input 
       type={type} 
@@ -55,7 +55,7 @@ const StyledInput = ({ label, type = "text", placeholder, ...props }) => (
 );
 
 // Reusable Select Component
-const StyledSelect = ({YZ, label, options, ...props }) => (
+const StyledSelect = ({ label, options, ...props }) => (
   <div className="flex flex-col gap-1.5">
     {label && <label className="text-xs font-bold text-deep-green/80 ml-1 uppercase tracking-wide">{label}</label>}
     <div className="relative">
@@ -81,7 +81,7 @@ const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-light-green/20 transition-colors"
-      jw>
+      >
         <div className="flex items-center gap-3 text-deep-green">
           <div className="size-8 rounded-lg bg-light-green/30 flex items-center justify-center">
             <span className="material-symbols-outlined text-[20px]">{icon}</span>
@@ -117,12 +117,13 @@ const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
 const CollegeSearch = () => {
   const [hasBacklogs, setHasBacklogs] = useState("No");
   const [hasWorkExp, setHasWorkExp] = useState("No");
+  const [englishTest, setEnglishTest] = useState("IELTS");
 
   return (
     <div className="flex flex-1 h-[calc(100vh-80px)] overflow-hidden bg-off-white font-display">
       
       {/* Sidebar - Desktop */}
-      <aside className="w-[400px] border-r border-deep-green/10 bg-off-white overflow-y-auto custom-scrollbar hidden lg:flex flex-col z-10">
+      <aside className="w-[420px] border-r border-deep-green/10 bg-off-white overflow-y-auto custom-scrollbar hidden lg:flex flex-col z-10">
         <div className="p-6 pb-24 space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -135,24 +136,27 @@ const CollegeSearch = () => {
           </div>
 
           <div className="space-y-4">
-            {/* Nationality */}
-            <FilterSection title="Origin & Education" icon="public" defaultOpen={true}>
-              <StyledSelect label="Nationality" options={["India", "Nigeria", "China", "Vietnam"]} />
-              <StyledSelect label="Education Country" options={["India", "USA", "UK", "Canada"]} />
+            
+            {/* 1. Nationality & Origin */}
+            <FilterSection title="Nationality & Origin" icon="public" defaultOpen={true}>
+              <StyledSelect label="Nationality" options={["India", "Nigeria", "China", "Vietnam", "Philippines"]} />
+              <StyledSelect label="Country of Education" options={["India", "USA", "UK", "Canada"]} />
             </FilterSection>
 
-            {/* Academic */}
-            <FilterSection title="Academic History" icon="school" defaultOpen={true}>
-              <StyledSelect label="Qualification" options={["Bachelor's Degree", "Master's Degree", "High School (12th)"]} />
-              <StyledInput label="Degree Name" placeholder="e.g. B.Tech CS" />
+            {/* 2. Academic Details */}
+            <FilterSection title="Academic History" icon="school">
+              <StyledSelect label="Highest Qualification" options={["Bachelor's Degree", "Master's Degree", "Diploma", "High School (12th)"]} />
+              <StyledInput label="Degree Name" placeholder="e.g. B.Tech Computer Science" />
+              <StyledInput label="University / College" placeholder="e.g. Mumbai University" />
+              
               <div className="grid grid-cols-2 gap-3">
                 <StyledInput label="Grad. Year" type="number" placeholder="2024" />
-                <StyledInput label="CGPA / %" placeholder="8.5" />
+                <StyledInput label="CGPA / %" placeholder="8.5 or 85%" />
               </div>
               
               {/* Backlogs Toggle */}
               <div className="pt-2">
-                <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">Any Backlogs?</label>
+                <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">History of Backlogs?</label>
                 <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit">
                   {['No', 'Yes'].map((opt) => (
                     <button
@@ -172,39 +176,122 @@ const CollegeSearch = () => {
                 <AnimatePresence>
                   {hasBacklogs === 'Yes' && (
                     <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
                       className="mt-3"
                     >
-                      <StyledInput label="Total Backlogs" type="number" placeholder="0" />
+                      <StyledInput label="Number of Backlogs" type="number" placeholder="Total count" />
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </FilterSection>
 
-            {/* English Scores */}
-            <FilterSection title="English Proficiency" icon="translate">
-              <StyledSelect label="Test Taken" options={["IELTS", "TOEFL", "PTE", "Duolingo"]} />
-              <div className="grid grid-cols-5 gap-2 items-end">
-                <div className="col-span-1">
-                  <StyledInput label="L" placeholder="-" className="text-center px-1" />
+            {/* 3. English Proficiency */}
+            <FilterSection title="English Proficiency" icon="translate" defaultOpen={true}>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-deep-green/80 ml-1 uppercase tracking-wide">Test Type</label>
+                    <div className="relative">
+                    <select 
+                        className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green focus:outline-none focus:border-deep-green focus:ring-0 transition-colors text-sm font-medium appearance-none cursor-pointer"
+                        onChange={(e) => setEnglishTest(e.target.value)}
+                        value={englishTest}
+                    >
+                        {["IELTS", "PTE", "TOEFL", "Duolingo", "Medium of Instruction (MOI)"].map((opt, i) => <option key={i} value={opt}>{opt}</option>)}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-deep-green pointer-events-none text-[20px]">
+                        expand_more
+                    </span>
+                    </div>
                 </div>
-                <div className="col-span-1">
-                  <StyledInput label="R" placeholder="-" className="text-center px-1" />
-                </div>
-                <div className="col-span-1">
-                  <StyledInput label="W" placeholder="-" className="text-center px-1" />
-                </div>
-                <div className="col-span-1">
-                  <StyledInput label="S" placeholder="-" className="text-center px-1" />
-                </div>
-                <div className="col-span-1">
-                  <StyledInput label="OA" placeholder="-" className="text-center px-1 bg-light-green/20 border-deep-green" />
-                </div>
+
+                {/* Show scores only if not MOI, or if you want to allow scores for MOI too, keep it. Usually MOI doesn't have band scores. */}
+                {englishTest !== "Medium of Instruction (MOI)" && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }}
+                        className="space-y-3"
+                    >
+                        <div className="grid grid-cols-5 gap-2 items-end">
+                            <div className="col-span-1"><StyledInput label="L" placeholder="-" className="text-center px-1" /></div>
+                            <div className="col-span-1"><StyledInput label="R" placeholder="-" className="text-center px-1" /></div>
+                            <div className="col-span-1"><StyledInput label="W" placeholder="-" className="text-center px-1" /></div>
+                            <div className="col-span-1"><StyledInput label="S" placeholder="-" className="text-center px-1" /></div>
+                            <div className="col-span-1"><StyledInput label="OA" placeholder="-" className="text-center bg-light-green/20 border-deep-green" /></div>
+                        </div>
+                        <StyledInput label="Test Date" type="date" />
+                    </motion.div>
+                )}
               </div>
             </FilterSection>
+
+            {/* 4. Work Experience */}
+            <FilterSection title="Work Experience" icon="work">
+                <div>
+                    <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">Do you have Work Exp?</label>
+                    <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit mb-4">
+                        {['No', 'Yes'].map((opt) => (
+                        <button
+                            key={opt}
+                            onClick={() => setHasWorkExp(opt)}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            hasWorkExp === opt 
+                                ? 'bg-deep-green text-primary shadow-sm' 
+                                : 'text-deep-green hover:bg-light-green/30'
+                            }`}
+                        >
+                            {opt}
+                        </button>
+                        ))}
+                    </div>
+
+                    <AnimatePresence>
+                        {hasWorkExp === 'Yes' && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-3 overflow-hidden"
+                        >
+                            <div className="grid grid-cols-2 gap-3">
+                                <StyledInput label="Years" type="number" placeholder="0" />
+                                <StyledInput label="Months" type="number" placeholder="0" />
+                            </div>
+                            <StyledInput label="Field of Work" placeholder="e.g. Software Development" />
+                        </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </FilterSection>
+
+            {/* 5. Course Preferences */}
+            <FilterSection title="Course Preferences" icon="tune" defaultOpen={true}>
+                <StyledInput label="Intended Course" placeholder="e.g. Data Science" />
+                <StyledInput label="Field / Stream" placeholder="e.g. Computer Science" />
+                
+                <StyledSelect label="Preferred Intake" options={["Any Intake", "Jan 2025", "May 2025", "Sep 2025"]} />
+                
+                <div className="pt-2">
+                    <div className="flex justify-between items-center mb-2">
+                        <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Budget Range (Annual)</label>
+                        <span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">Max: $25k</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        min="5000" 
+                        max="50000" 
+                        step="1000"
+                        className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" 
+                    />
+                    <div className="flex justify-between text-[10px] font-bold text-deep-green/50 mt-1">
+                        <span>$5k</span>
+                        <span>$50k+</span>
+                    </div>
+                </div>
+            </FilterSection>
+
           </div>
         </div>
 
@@ -261,7 +348,7 @@ const CollegeSearch = () => {
                 className="bg-white rounded-2xl border-2 border-transparent hover:border-light-green p-6 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col relative overflow-hidden"
               >
                 {/* Decorative blob on hover */}
-                <div className="absolute -right-12 -top-12 w-32 h-32 bg-primary/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+               <div className="absolute -right-12 -top-12 w-32 h-32 bg-light-green/20 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div> 
 
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <div className="size-16 rounded-2xl bg-off-white border border-deep-green/10 flex items-center justify-center shadow-inner text-deep-green">
@@ -299,4 +386,17 @@ const CollegeSearch = () => {
                   ))}
                 </div>
 
-                <button className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-
+                <button className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-bold hover:border-deep-green hover:bg-deep-green hover:text-white transition-all flex items-center justify-center gap-2 group-hover:shadow-md relative z-10">
+                  Apply for Application
+                  <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </button>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default CollegeSearch;

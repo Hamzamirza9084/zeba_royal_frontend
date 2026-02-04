@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import LoginPage from './components/LoginPage'; 
 import RegisterPage from './components/RegisterPage'
 import CollegeSearch from './components/CollegeSearch';
+import AdminAddUniversity from './components/AdminAddUniversity';
 
 const MainLayout = ({ children }) => (
   <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-deep-green dark:text-off-white overflow-x-hidden">
@@ -27,7 +28,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         {/* New Route */}
-        <Route path="/colleges" element={<MainLayout><CollegeSearch /></MainLayout>} />
+        <Route path="/colleges" element={<MainLayout><AdminAddUniversity /></MainLayout>} />
       </Routes>
     </Router>
   );
