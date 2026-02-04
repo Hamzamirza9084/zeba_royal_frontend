@@ -18,13 +18,13 @@ const Header = () => {
           <a className="text-sm font-medium hover:text-primary transition-colors" href="#">Pricing</a>
         </nav>
         <div className="flex items-center gap-4">
-          <button className="hidden sm:flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-deep-green text-sm font-bold hover:bg-primary/90 transition-colors">
-            Free Trial
-          </button>
-          <button className="md:hidden p-2 text-deep-green dark:text-off-white">
-            <span className="material-symbols-outlined">menu</span>
-          </button>
-        </div>
+  <Link to="/login" className="text-sm font-bold hover:text-primary transition-colors">
+    Login
+  </Link>
+  <button className="hidden sm:flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-deep-green text-sm font-bold hover:bg-primary/90 transition-colors">
+    Free Trial
+  </button>
+</div>
       </div>
     </header>
   );
