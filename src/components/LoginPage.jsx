@@ -33,7 +33,7 @@ const LoginPage = () => {
       </section>
 
       {/* Right Section: Login Form */}
-      <section className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 bg-white">
+      <section className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 ">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-3 mb-12">
             <div className="size-10 flex items-center justify-center rounded-lg bg-deep-green text-primary">
@@ -51,7 +51,7 @@ const LoginPage = () => {
             <div>
               <label className="block text-sm font-bold mb-2" htmlFor="email">Email Address</label>
               <input 
-                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-light-green focus:border-light-green outline-none transition-all bg-off-white/30" 
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-light-green focus:border-deep-green outline-none transition-all bg-off-white/30" 
                 id="email" 
                 placeholder="name@example.com" 
                 type="email" 
