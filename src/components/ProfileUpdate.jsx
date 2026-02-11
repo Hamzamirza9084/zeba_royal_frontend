@@ -72,7 +72,8 @@ const ProfileUpdate = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user?.token;
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const { data } = await axios.get('http://localhost:5000/api/users/me', config);
 
@@ -151,7 +152,8 @@ const ProfileUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = user?.token;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.put('http://localhost:5000/api/users/profile', formData, config);
       alert('Profile Updated Successfully!');
@@ -207,8 +209,8 @@ const ProfileUpdate = () => {
           <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
             <SectionHeader title="Background Information" icon="history" />
             <div className="p-8 grid md:grid-cols-2 gap-6">
-              <SelectField label="Refused a Visa? (US, UK, Canada, etc)" name="refusedVisa" value={formData.backgroundInfo.refusedVisa} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
-              <SelectField label="Valid Study Permit/Visa?" name="validStudyPermit" value={formData.backgroundInfo.validStudyPermit} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
+              <SelectField label="Refused a Visa? (US, UK, Canada, etc)" name="refusedVisa" value={formData.backgroundInfo.refusedVisa || ''} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
+              <SelectField label="Valid Study Permit/Visa?" name="validStudyPermit" value={formData.backgroundInfo.validStudyPermit || ''} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
               {(formData.backgroundInfo.refusedVisa === 'Yes' || formData.backgroundInfo.validStudyPermit === 'Yes') && (
                  <InputField label="Provide Additional Details" name="details" value={formData.backgroundInfo.details} onChange={(e) => handleChange(e, 'backgroundInfo')} />
               )}
@@ -223,7 +225,7 @@ const ProfileUpdate = () => {
               <InputField label="Highest Level of Education" name="highestLevel" value={formData.educationDetails.highestLevel} onChange={(e) => handleChange(e, 'educationDetails')} width="half" />
               <InputField label="Grading Scheme" name="gradingScheme" value={formData.educationDetails.gradingScheme} onChange={(e) => handleChange(e, 'educationDetails')} width="half" />
               <InputField label="Grade Average" name="gradeAverage" value={formData.educationDetails.gradeAverage} onChange={(e) => handleChange(e, 'educationDetails')} width="half" />
-              <SelectField label="Graduated from Most Recent School?" name="graduatedMostRecent" value={formData.educationDetails.graduatedMostRecent} onChange={(e) => handleChange(e, 'educationDetails')} options={['Yes', 'No']} />
+              <SelectField label="Graduated from Most Recent School?" name="graduatedMostRecent" value={formData.educationDetails.graduatedMostRecent || ''} onChange={(e) => handleChange(e, 'educationDetails')} options={['Yes', 'No']} />
             </div>
           </div>
 
@@ -260,9 +262,9 @@ const ProfileUpdate = () => {
                             <InputField label="To" type="date" name="attendedTo" value={school.attendedTo ? school.attendedTo.split('T')[0] : ''} onChange={(e) => handleSchoolChange(index, e)} />
                         </div>
                         <InputField label="Degree Name" name="degreeName" value={school.degreeName} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <SelectField label="Graduated?" name="graduated" value={school.graduated} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
+                        <SelectField label="Graduated?" name="graduated" value={school.graduated || ''} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
                         <InputField label="Graduation Date" type="date" name="graduationDate" value={school.graduationDate ? school.graduationDate.split('T')[0] : ''} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <SelectField label="Physical Certificate Available?" name="physicalCertificateAvailable" value={school.physicalCertificateAvailable} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
+                        <SelectField label="Physical Certificate Available?" name="physicalCertificateAvailable" value={school.physicalCertificateAvailable || ''} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
                     </div>
 
                     {/* School Address Sub-section */}
@@ -284,13 +286,10 @@ const ProfileUpdate = () => {
           <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
             <SectionHeader title="Test Scores" icon="quiz" />
             <div className="p-8 grid md:grid-cols-2 gap-6">
-              <SelectField label="Proof of Language Proficiency Available?" name="proofOfLanguageProficiency" value={formData.testScores.proofOfLanguageProficiency} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} />
-              <div className="flex items-center pt-6">
-                  <input type="checkbox" name="applyConditionalAdmission" checked={formData.testScores.applyConditionalAdmission} onChange={(e) => handleChange(e, 'testScores')} className="w-5 h-5 text-[#347928] focus:ring-[#347928] border-gray-300 rounded" />
-                  <label className="ml-2 block text-sm font-semibold text-[#347928]/80">Apply with Conditional Admission?</label>
-              </div>
+              <SelectField label="Proof of Language Proficiency Available?" name="proofOfLanguageProficiency" value={formData.testScores.proofOfLanguageProficiency || ''} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} />
+              <SelectField label="Apply with Conditional Admission?" name="applyConditionalAdmission" value={formData.testScores.applyConditionalAdmission ? 'Yes' : 'No'} onChange={(e) => { const e2 = {...e}; e2.target.type = 'checkbox'; e2.target.checked = e.target.value === 'Yes'; handleChange(e2, 'testScores'); }} options={['Yes', 'No']} />
               <InputField label="Language Test Status" name="languageTestStatus" value={formData.testScores.languageTestStatus} onChange={(e) => handleChange(e, 'testScores')} width="half" />
-              <SelectField label="Open to Language Proficiency Course?" name="openToProficiencyCourse" value={formData.testScores.openToProficiencyCourse} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} width="half" />
+              <SelectField label="Open to Language Proficiency Course?" name="openToProficiencyCourse" value={formData.testScores.openToProficiencyCourse || ''} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} width="half" />
               <InputField label="GRE Exam Scores" name="greScores" value={formData.testScores.greScores} onChange={(e) => handleChange(e, 'testScores')} width="half" />
               <InputField label="GMAT Exam Scores" name="gmatScores" value={formData.testScores.gmatScores} onChange={(e) => handleChange(e, 'testScores')} width="half" />
             </div>
