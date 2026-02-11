@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.jsx'
 
 // Set the base URL for all axios requests
-axios.defaults.baseURL = 'https://zeba-royal-backend.onrender.com';
+axios.defaults.baseURL = 'http://localhost:5000';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -35,9 +35,9 @@ const Header = () => {
         <Link to="/" className="flex items-center gap-3 text-deep-green dark:text-primary group">
   {/* Replaced the original div and icon with this img tag */}
   <img
-    src="../../public/Images/royal.png"
+    src="../../public/Images/svglogo.svg"
     alt="Anvora Logo"
-    className="size-30 object-contain group-hover:scale-110 transition-transform"
+    className="size-13 object-contain group-hover:scale-110 transition-transform"
   />
 
   <h2 className="text-xl font-bold tracking-tight">Anvora</h2>
@@ -63,7 +63,12 @@ const Header = () => {
                   <p className="text-sm font-bold text-deep-green leading-none">{user.name}</p>
                   <p className="text-xs text-deep-green/60 mt-0.5">{user.email}</p>
                </div>
-               
+               <Link 
+                to="/profile/upload" 
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Auto-Fill Profile
+              </Link>
                <button 
                  onClick={handleLogout}
                  className="flex items-center justify-center size-10 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition-all"

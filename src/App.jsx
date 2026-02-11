@@ -7,6 +7,7 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage'
 import CollegeSearch from './components/CollegeSearch';
 import AdminAddUniversity from './components/AdminAddUniversity';
+import ProfileUpload from './components/ProfileUpload';
 
 const MainLayout = ({ children }) => (
   <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-deep-green dark:text-off-white overflow-x-hidden">
@@ -28,7 +29,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/colleges" element={<MainLayout><CollegeSearch /></MainLayout>} />
-        
+        <Route path="/profile/upload" element={<ProfileUpload />} />
         {/* Admin Route */}
         <Route path="/admin" element={<AdminAddUniversity />} />
       </Routes>
