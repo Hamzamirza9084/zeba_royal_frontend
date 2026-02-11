@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Used to trigger updates on route change
+  const location = useLocation();
   const [user, setUser] = useState(null);
 
   // Check for user in localStorage whenever the route changes
@@ -22,9 +22,9 @@ const Header = () => {
   }, [location]);
 
   const handleLogout = () => {
-    localStorage.removeItem('user'); // Clear data
-    setUser(null); // Clear state
-    navigate('/login'); // Redirect
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/login');
   };
 
   return (
@@ -33,15 +33,14 @@ const Header = () => {
         
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-3 text-deep-green dark:text-primary group">
-  {/* Replaced the original div and icon with this img tag */}
-  <img
-    src="../../public/Images/svglogo.svg"
-    alt="Anvora Logo"
-    className="size-13 object-contain group-hover:scale-110 transition-transform"
-  />
+          <img
+            src="../../public/Images/svglogo.svg"
+            alt="Anvora Logo"
+            className="size-13 object-contain group-hover:scale-110 transition-transform"
+          />
+          <h2 className="text-xl font-bold tracking-tight">Anvora</h2>
+        </Link>
 
-  <h2 className="text-xl font-bold tracking-tight">Anvora</h2>
-</Link>
         {/* Navigation - Main "Finder" Link */}
         <nav className="hidden md:flex items-center gap-8">
           <Link 
@@ -63,12 +62,17 @@ const Header = () => {
                   <p className="text-sm font-bold text-deep-green leading-none">{user.name}</p>
                   <p className="text-xs text-deep-green/60 mt-0.5">{user.email}</p>
                </div>
+               
+               {/* Updated Profile Link with Icon */}
                <Link 
-                to="/profile/upload" 
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                to="/profile/update" 
+                className="flex items-center gap-2 bg-deep-green/5 hover:bg-deep-green/10 text-deep-green px-3 py-2 rounded-lg transition-all"
+                title="Update Profile"
               >
-                Auto-Fill Profile
+                <span className="material-symbols-outlined text-[20px]">person_edit</span>
+                <span className="text-sm font-bold hidden lg:block">Profile</span>
               </Link>
+
                <button 
                  onClick={handleLogout}
                  className="flex items-center justify-center size-10 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition-all"
