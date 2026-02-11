@@ -1,601 +1,778 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Upload, FileText, Trash2, Eye, Info, Plus, Calendar, 
+  MapPin, Globe, GraduationCap, CheckCircle 
+} from 'lucide-react';
 import axios from 'axios';
 
-// --- Data Constants ---
-
-// Comprehensive list of languages
-const languages = [
-  "Assamese", "Bengali", "Bodo", "Dogri", "Gujarati", "Hindi", "Kannada", 
-  "Kashmiri", "Konkani", "Maithili", "Malayalam", "Manipuri", "Marathi", 
-  "Nepali", "Odia", "Punjabi", "Sanskrit", "Santali", "Sindhi", "Tamil", 
-  "Telugu", "Urdu",
-  "English", "Mandarin Chinese", "Spanish", "French", "Arabic", "Russian", 
-  "Portuguese", "German", "Japanese", "Italian", "Korean", "Turkish"
-].sort();
-
-// List of Countries
-const countries = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", 
-  "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", 
-  "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", 
-  "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", 
-  "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", 
-  "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", 
-  "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", 
-  "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", 
-  "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", 
-  "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", 
-  "Ivory Coast", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, North", 
-  "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", 
-  "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", 
-  "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", 
-  "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", 
-  "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Macedonia", "Norway", "Oman", 
-  "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", 
-  "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", 
-  "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", 
-  "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", 
-  "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", 
-  "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", 
-  "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", 
-  "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", 
-  "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-];
-
-// Mapping of Countries to their States
-const countryStateMap = {
-  "India": [
-    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
-    "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
-    "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
-    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", 
-    "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", 
-    "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", 
-    "Lakshadweep", "Puducherry"
-  ],
-  "United States": [
-    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
-    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
-    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
-    "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
-    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", 
-    "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", 
-    "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", 
-    "Wyoming"
-  ]
-};
-
-// Grading Schemes and their specific Options
-const gradingSchemes = [
-  "CBSE School Grading (Classes 10 & 12)",
-  "University Grading (UGC 10-Point Scale)",
-  "CGPA (10 Point Scale)",
-  "CGPA (4 Point Scale)",
-  "Percentage (0-100)",
-  "Other"
-];
-
-const gradeOptions = {
-  "CBSE School Grading (Classes 10 & 12)": [
-    "A1 (91-100)", "A2 (81-90)", "B1 (71-80)", "B2 (61-70)", 
-    "C1 (51-60)", "C2 (41-50)", "D (33-40)", "E1 (Below 33)", "E2 (Below 33)"
-  ],
-  "University Grading (UGC 10-Point Scale)": [
-    "O (Outstanding) - 10", "A+ (Excellent) - 9", "A (Very Good) - 8", 
-    "B+ (Good) - 7", "B (Above Average) - 6", "C (Average) - 5", 
-    "P (Pass) - 4", "F (Fail) - 0"
-  ]
-};
-
-// --- Components ---
-
-const SectionHeader = ({ title, icon }) => (
-  <div className="px-8 py-6 border-b border-[#347928]/10 bg-[#C0EBA6]/20 flex items-center gap-2">
-    <span className="material-symbols-outlined text-[#347928]">{icon}</span>
-    <h3 className="text-xl font-bold text-[#347928] font-display uppercase tracking-wider">{title}</h3>
-  </div>
-);
-
-const InputField = ({ label, name, value, onChange, type = "text", placeholder, width = "full", inputMode, pattern }) => (
-  <div className={`space-y-2 ${width === 'half' ? 'col-span-1' : 'col-span-2'}`}>
-    <label className="text-sm font-semibold text-[#347928]/80">{label}</label>
-    <input
-      type={type}
-      name={name}
-      value={value || ''}
-      onChange={onChange}
-      placeholder={placeholder}
-      inputMode={inputMode}
-      pattern={pattern}
-      className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] placeholder:text-[#347928]/40 focus:border-[#347928] focus:ring-[#347928]"
-    />
-  </div>
-);
-
-const SelectField = ({ label, name, value, onChange, options, width = "full" }) => (
-  <div className={`space-y-2 ${width === 'half' ? 'col-span-1' : 'col-span-2'}`}>
-    <label className="text-sm font-semibold text-[#347928]/80">{label}</label>
-    <select
-      name={name}
-      value={value || ''}
-      onChange={onChange}
-      className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-    >
-      <option value="">Select...</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>{opt}</option>
-      ))}
-    </select>
-  </div>
-);
-
 const ProfileUpdate = () => {
-  const [loading, setLoading] = useState(true);
-  
-  // Initial State matching DB Schema
+  // --- STATE MANAGEMENT ---
   const [formData, setFormData] = useState({
+    documents: [
+      
+    ],
     personalInfo: {
-      firstName: '', middleName: '', lastName: '', dateOfBirth: '', firstLanguage: '',
-      countryOfCitizenship: '', passportNumber: '', passportExpiryDate: '',
-      passportPlaceOfBirth: '', gender: '', maritalStatus: '', phoneNumber: '', studentEmail: ''
+      firstName: "", middleName: "", lastName: "",
+      dob: "", firstLanguage: "", citizenship: "",
+      maritalStatus: "Single", gender: "Male",
+      passport: {
+        number: "",
+        expiryDate: "",
+        placeOfBirth: ""
+      }
     },
-    addressDetails: {
-      street: '', city: '', country: '', province: '', postalCode: ''
+    address: {
+      street: "", city: "", country: "", state: "", zipCode: "",
+      phone: "", phoneCountryCode: "+91"
     },
-    backgroundInfo: {
-      refusedVisa: '', validStudyPermit: '', details: ''
-    },
-    educationDetails: {
-      countryOfEducation: '', highestLevel: '', gradingScheme: '', gradeAverage: '', graduatedMostRecent: ''
-    },
-    schoolHistory: [], // Array of objects
+    education: [
+      {
+        country: "India",
+        schoolName: "",
+        level: "Bachelors",
+        gradingScheme: "Percentage",
+        language: "English",
+        attendedFrom: "",
+        attendedTo: "",
+        degreeName: "",
+        isGraduated: true,
+        graduationDate: "",
+        hasPhysicalCertificate: true,
+        schoolAddress: { street: "", city: "", state: "", zipCode: "" }
+      }
+    ],
     testScores: {
-      proofOfLanguageProficiency: '', applyConditionalAdmission: false, languageTestStatus: '',
-      greScores: '', gmatScores: '', openToProficiencyCourse: ''
-    },
-    additionalDetails: {
-      emergencyContact: '', additionalNotes: ''
+      englishProficiency: "proof",
+      examType: "",
+      examDate: "",
+      overallScore: ""
     }
   });
 
-  // Fetch Data on Load
+  // Load existing user profile into form on mount
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        const token = user?.token;
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const { data } = await axios.get('http://localhost:5000/api/users/me', config);
+    try {
+      const stored = JSON.parse(localStorage.getItem('user'));
+      if (stored) {
+        const toDateInput = (d) => {
+          if (!d) return '';
+          const dt = (typeof d === 'string' || typeof d === 'number') ? new Date(d) : d;
+          if (!(dt instanceof Date) || isNaN(dt)) return '';
+          return dt.toISOString().slice(0,10);
+        };
 
-        if (data) {
-          // Merge received data with initial state to ensure structure exists
-          setFormData(prev => ({
-            ...prev,
-            personalInfo: { ...prev.personalInfo, ...data.personalInfo },
-            addressDetails: { ...prev.addressDetails, ...data.addressDetails },
-            backgroundInfo: { ...prev.backgroundInfo, ...data.backgroundInfo },
-            educationDetails: { ...prev.educationDetails, ...data.educationDetails },
-            schoolHistory: data.schoolHistory || [],
-            testScores: { ...prev.testScores, ...data.testScores },
-            additionalDetails: { ...prev.additionalDetails, ...data.additionalDetails },
-          }));
+        const normalizedPersonal = { ...(stored.personalInfo || {}) };
+        if (normalizedPersonal.dob) normalizedPersonal.dob = toDateInput(normalizedPersonal.dob);
+        if (normalizedPersonal.passport) {
+          normalizedPersonal.passport = {
+            ...(normalizedPersonal.passport || {}),
+            expiryDate: toDateInput(normalizedPersonal.passport.expiryDate)
+          };
         }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching profile", error);
-        setLoading(false);
+
+        const normalizedEducation = Array.isArray(stored.education)
+          ? stored.education.map(edu => ({
+              ...edu,
+              attendedFrom: toDateInput(edu.attendedFrom),
+              attendedTo: toDateInput(edu.attendedTo),
+              graduationDate: toDateInput(edu.graduationDate),
+              schoolAddress: edu.schoolAddress || {}
+            }))
+          : prev.education;
+
+        const normalizedTestScores = { ...(stored.testScores || {}) };
+        if (normalizedTestScores.examDate) normalizedTestScores.examDate = toDateInput(normalizedTestScores.examDate);
+
+        setFormData(prev => ({
+          ...prev,
+          personalInfo: { ...prev.personalInfo, ...normalizedPersonal },
+          address: { ...prev.address, ...(stored.address || {}) },
+          education: normalizedEducation,
+          testScores: { ...prev.testScores, ...normalizedTestScores },
+          documents: Array.isArray(stored.documents) ? stored.documents : prev.documents
+        }));
       }
-    };
-    fetchProfile();
+    } catch (err) {
+      // ignore parse errors
+    }
   }, []);
 
-  // Generic Handler for nested objects
-  const handleChange = (e, section) => {
-    const { name, value, type, checked } = e.target;
-    const val = type === 'checkbox' ? checked : value;
-
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [name]: val
-      }
-    }));
-  };
-
-  // Handler specifically for numeric inputs (Phone, Postal)
-  const handleNumericInput = (e, section) => {
-    const { value } = e.target;
-    if (/^\d*$/.test(value)) {
-      handleChange(e, section);
-    }
-  };
-
-  // Handler for Country change in Address Details (triggers state reset)
-  const handleAddressCountryChange = (e) => {
-    const { value } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      addressDetails: {
-        ...prev.addressDetails,
-        country: value,
-        province: '' // Reset province when country changes
-      }
-    }));
-  };
-
-  // Handler for Grading Scheme change in Education Details (resets grade average)
-  const handleEducationSchemeChange = (e) => {
-    handleChange(e, 'educationDetails');
-    // Reset the grade average when the scheme changes to prevent mismatch
-    handleChange({ target: { name: 'gradeAverage', value: '' } }, 'educationDetails');
-  };
-
-  // Specific Handler for School History Array
-  const handleSchoolChange = (index, e, subObject = null) => {
+  // --- HANDLERS ---
+  
+  const handlePersonalChange = (e) => {
     const { name, value } = e.target;
-    const newHistory = [...formData.schoolHistory];
     
-    if (subObject) {
-       // Handle nested school address
-       newHistory[index][subObject] = {
-         ...newHistory[index][subObject],
-         [name]: value
-       };
-       // Specific numeric check for postal code in school address
-       if (name === 'postalCode' && !/^\d*$/.test(value)) return;
+    // Special handling for nested passport fields
+    if (name === 'passportNumber' || name === 'passportExpiry' || name === 'placeOfBirth') {
+      const passportFieldMap = {
+        passportNumber: 'number',
+        passportExpiry: 'expiryDate',
+        placeOfBirth: 'placeOfBirth'
+      };
+      const schemaFieldName = passportFieldMap[name];
+      
+      setFormData(prev => ({
+        ...prev,
+        personalInfo: {
+          ...prev.personalInfo,
+          passport: { ...prev.personalInfo.passport, [schemaFieldName]: value }
+        }
+      }));
     } else {
-       newHistory[index][name] = value;
-       
-       // If changing grading scheme, reset the grade average for that specific school
-       if (name === 'gradingScheme') {
-           newHistory[index]['gradeAverage'] = '';
-       }
+      setFormData(prev => ({
+        ...prev,
+        personalInfo: { ...prev.personalInfo, [name]: value }
+      }));
     }
-    
-    setFormData(prev => ({ ...prev, schoolHistory: newHistory }));
   };
 
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      address: { ...prev.address, [name]: value }
+    }));
+  };
+
+  // Education Repeater Logic
   const addSchool = () => {
     setFormData(prev => ({
       ...prev,
-      schoolHistory: [...prev.schoolHistory, {
-        countryOfInstitution: '', schoolName: '', educationLevel: '', gradingScheme: '', gradeAverage: '',
-        primaryLanguage: '', attendedFrom: '', attendedTo: '', degreeName: '',
-        graduated: '', graduationDate: '', physicalCertificateAvailable: '',
-        schoolAddress: { street: '', city: '', province: '', postalCode: '' }
-      }]
+      education: [
+        ...prev.education,
+        {
+          country: "", schoolName: "", level: "", gradingScheme: "",
+          language: "", attendedFrom: "", attendedTo: "", degreeName: "",
+          isGraduated: true, graduationDate: "", hasPhysicalCertificate: false,
+          schoolAddress: { street: "", city: "", state: "", zipCode: "" }
+        }
+      ]
     }));
   };
 
   const removeSchool = (index) => {
-    const newHistory = [...formData.schoolHistory];
-    newHistory.splice(index, 1);
-    setFormData(prev => ({ ...prev, schoolHistory: newHistory }));
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleEducationChange = (index, field, value, isNested = false, nestedField = null) => {
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.map((edu, i) => {
+        if (i === index) {
+          if (isNested) {
+            return { ...edu, [field]: { ...edu[field], [nestedField]: value } };
+          }
+          return { ...edu, [field]: value };
+        }
+        return edu;
+      })
+    }));
+  };
+
+  const handleTestScoreChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      testScores: { ...prev.testScores, [name]: value }
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Get token from user object stored in localStorage
       const user = JSON.parse(localStorage.getItem('user'));
       const token = user?.token;
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put('http://localhost:5000/api/users/profile', formData, config);
-      alert('Profile Updated Successfully!');
+
+      if (!token) {
+        alert("Error: Authentication token not found. Please log in again.");
+        return;
+      }
+
+      // Sanitize payload: convert empty-date strings to null so Mongoose won't cast/break
+      const sanitize = (data) => {
+        const copy = JSON.parse(JSON.stringify(data));
+
+        const setNullIfEmpty = (obj, key) => {
+          if (obj && obj[key] === '') obj[key] = null;
+        };
+
+        if (copy.personalInfo) {
+          setNullIfEmpty(copy.personalInfo, 'dob');
+          if (copy.personalInfo.passport) {
+            setNullIfEmpty(copy.personalInfo.passport, 'expiryDate');
+            setNullIfEmpty(copy.personalInfo.passport, 'placeOfBirth');
+          }
+        }
+
+        if (copy.testScores) setNullIfEmpty(copy.testScores, 'examDate');
+
+        if (Array.isArray(copy.education)) {
+          copy.education = copy.education.map(edu => {
+            ['attendedFrom', 'attendedTo', 'graduationDate'].forEach(k => {
+              if (edu[k] === '') edu[k] = null;
+            });
+            return edu;
+          });
+        }
+
+        return copy;
+      };
+
+      const payload = sanitize(formData);
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      const response = await axios.put('http://localhost:5000/api/users/profile', payload, config);
+      const data = response.data;
+
+      // Update form with returned user data so inputs reflect saved values
+      const toDateInput = (d) => {
+        if (!d) return '';
+        const dt = (typeof d === 'string' || typeof d === 'number') ? new Date(d) : d;
+        if (!(dt instanceof Date) || isNaN(dt)) return '';
+        return dt.toISOString().slice(0,10);
+      };
+
+      const normalizedPersonal = { ...(data.personalInfo || {}) };
+      if (normalizedPersonal.dob) normalizedPersonal.dob = toDateInput(normalizedPersonal.dob);
+      if (normalizedPersonal.passport) {
+        normalizedPersonal.passport = {
+          ...(normalizedPersonal.passport || {}),
+          expiryDate: toDateInput(normalizedPersonal.passport.expiryDate)
+        };
+      }
+
+      const normalizedEducation = Array.isArray(data.education)
+        ? data.education.map(edu => ({
+            ...edu,
+            attendedFrom: toDateInput(edu.attendedFrom),
+            attendedTo: toDateInput(edu.attendedTo),
+            graduationDate: toDateInput(edu.graduationDate),
+            schoolAddress: edu.schoolAddress || {}
+          }))
+        : prev.education;
+
+      const normalizedTestScores = { ...(data.testScores || {}) };
+      if (normalizedTestScores.examDate) normalizedTestScores.examDate = toDateInput(normalizedTestScores.examDate);
+
+      setFormData(prev => ({
+        ...prev,
+        personalInfo: { ...prev.personalInfo, ...normalizedPersonal },
+        address: { ...prev.address, ...(data.address || {}) },
+        education: normalizedEducation,
+        testScores: { ...prev.testScores, ...normalizedTestScores },
+        documents: Array.isArray(data.documents) ? data.documents : prev.documents
+      }));
+
+      // Update stored user object (keeps token and latest profile)
+      try {
+        const current = JSON.parse(localStorage.getItem('user')) || {};
+        const updatedUser = { ...current, ...data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } catch (err) {
+        // ignore storage errors
+      }
+
+      alert("Profile Updated Successfully!");
     } catch (error) {
-      console.error(error);
-      alert('Error updating profile');
+      console.error(error.response?.data || error.message);
+      alert(error.response?.data?.message || "Error updating profile");
     }
   };
 
-  if (loading) return <div className="text-center py-20">Loading Profile...</div>;
+  // --- Document Upload ---
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Client-side validation: only PDFs
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      alert('Please select a PDF file');
+      return;
+    }
+
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = user?.token;
+      if (!token) return alert('Please login to upload files');
+
+      const fd = new FormData();
+      fd.append('file', file);
+
+      const res = await axios.post('http://localhost:5000/api/users/documents', fd, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const docs = res.data.documents;
+      setFormData(prev => ({ ...prev, documents: docs }));
+
+      // update localStorage user
+      try {
+        const current = JSON.parse(localStorage.getItem('user')) || {};
+        const updated = { ...current, documents: docs };
+        localStorage.setItem('user', JSON.stringify(updated));
+      } catch (err) {}
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert(err.response?.data?.message || 'Upload failed');
+    }
+  };
+
+  const handleView = (doc) => {
+    if (!doc || !doc.fileUrl) return alert('No file URL available');
+    (async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user?.token;
+        if (!token) return alert('Please login to view files');
+
+        const filename = doc.fileUrl.split('/').pop();
+        const url = `http://localhost:5000/api/users/documents/view/${encodeURIComponent(filename)}`;
+
+        const res = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        });
+
+        const contentType = res.headers['content-type'] || 'application/pdf';
+        const blob = new Blob([res.data], { type: contentType });
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        // Try to open in a new tab; if popup blocked, trigger download
+        const newWin = window.open(blobUrl, '_blank');
+        if (!newWin) {
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = doc.fileName || filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+
+        // Revoke URL after a short delay
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 20000);
+      } catch (err) {
+        console.error(err.response?.data || err.message);
+        alert(err.response?.data?.message || 'Unable to view document');
+      }
+    })();
+  };
+
+  const handleDelete = async (doc) => {
+    if (!doc || !doc.fileUrl) return;
+    if (!confirm('Delete this document?')) return;
+
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = user?.token;
+      if (!token) return alert('Please login to delete files');
+
+      const res = await axios.delete('http://localhost:5000/api/users/documents', {
+        data: { fileUrl: doc.fileUrl },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const docs = res.data.documents;
+      setFormData(prev => ({ ...prev, documents: docs }));
+
+      try {
+        const current = JSON.parse(localStorage.getItem('user')) || {};
+        const updated = { ...current, documents: docs };
+        localStorage.setItem('user', JSON.stringify(updated));
+      } catch (err) {}
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert(err.response?.data?.message || 'Delete failed');
+    }
+  };
 
   return (
-    <div className="bg-[#FFFBE6] min-h-screen font-body text-[#347928] py-12 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-4xl font-extrabold font-display mb-2 text-[#347928]">Student Update Profile</h1>
-        <p className="mb-10 text-[#347928]/70">Please ensure all details are accurate for your application.</p>
+    <div className="min-h-screen bg-gray-50 p-6 md:p-12 font-sans text-gray-800">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Student Application Profile</h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* === PERSONAL INFORMATION === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <SectionHeader title="Personal Information" icon="person" />
-            <div className="p-8 grid md:grid-cols-2 gap-6">
-              <InputField label="First Name" name="firstName" value={formData.personalInfo.firstName} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              <InputField label="Middle Name" name="middleName" value={formData.personalInfo.middleName} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              <InputField label="Last Name" name="lastName" value={formData.personalInfo.lastName} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              <InputField label="Date of Birth" name="dateOfBirth" type="date" value={formData.personalInfo.dateOfBirth ? formData.personalInfo.dateOfBirth.split('T')[0] : ''} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              
-              {/* Updated First Language Dropdown */}
-              <SelectField label="First Language" name="firstLanguage" value={formData.personalInfo.firstLanguage} onChange={(e) => handleChange(e, 'personalInfo')} options={languages} width="half" />
-              
-              {/* Updated Citizenship Dropdown */}
-              <SelectField label="Country of Citizenship" name="countryOfCitizenship" value={formData.personalInfo.countryOfCitizenship} onChange={(e) => handleChange(e, 'personalInfo')} options={countries} width="half" />
-              
-              <InputField label="Passport Number" name="passportNumber" value={formData.personalInfo.passportNumber} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              <InputField label="Passport Expiry Date" name="passportExpiryDate" type="date" value={formData.personalInfo.passportExpiryDate ? formData.personalInfo.passportExpiryDate.split('T')[0] : ''} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
-              <InputField label="Place of Birth" name="passportPlaceOfBirth" value={formData.personalInfo.passportPlaceOfBirth} onChange={(e) => handleChange(e, 'personalInfo')} />
-              <SelectField label="Gender" name="gender" value={formData.personalInfo.gender} onChange={(e) => handleChange(e, 'personalInfo')} options={['Male', 'Female', 'Other']} width="half" />
-              <SelectField label="Marital Status" name="maritalStatus" value={formData.personalInfo.maritalStatus} onChange={(e) => handleChange(e, 'personalInfo')} options={['Single', 'Married', 'Divorced']} width="half" />
-              
-              {/* Numeric Input for Phone */}
-              <InputField 
-                label="Phone Number" 
-                name="phoneNumber" 
-                value={formData.personalInfo.phoneNumber} 
-                onChange={(e) => handleNumericInput(e, 'personalInfo')} 
-                width="half" 
-                inputMode="numeric" 
-                pattern="[0-9]*"
-                placeholder="Numbers only"
-              />
-              <InputField label="Student Email" name="studentEmail" type="email" value={formData.personalInfo.studentEmail} onChange={(e) => handleChange(e, 'personalInfo')} width="half" />
+          {/* 2. Smart Document Vault */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" /> Smart Document Vault
+              </h2>
+            </div>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left: Upload Zone */}
+              <div className="border-2 border-dashed border-blue-200 rounded-lg p-8 flex flex-col items-center justify-center bg-blue-50/50 hover:bg-blue-50 transition cursor-pointer">
+                <div className="bg-blue-100 p-3 rounded-full mb-3">
+                  <Upload className="w-6 h-6 text-blue-600" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Drag & Drop files here</p>
+                <p className="text-xs text-gray-400 mt-1">or click to browse (PDF, JPG, PNG)</p>
+                <input type="file" accept=".pdf" onChange={handleFileSelect} className="mt-3" />
+              </div>
+
+              {/* Right: File List */}
+              <div className="space-y-3">
+                {formData.documents.map((doc, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-700">{doc.fileName}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium border border-green-200">
+                        {doc.status}
+                      </span>
+                      <button type="button" onClick={() => handleView(doc)} className="text-gray-400 hover:text-blue-600"><Eye className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => handleDelete(doc)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* === ADDRESS DETAILS === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <SectionHeader title="Address Details" icon="home" />
-            <div className="p-8 grid md:grid-cols-2 gap-6">
-              <InputField label="Street Address" name="street" value={formData.addressDetails.street} onChange={(e) => handleChange(e, 'addressDetails')} />
-              <InputField label="City" name="city" value={formData.addressDetails.city} onChange={(e) => handleChange(e, 'addressDetails')} width="half" />
-              
-              {/* Cascading Country Dropdown */}
-              <SelectField 
-                label="Country" 
-                name="country" 
-                value={formData.addressDetails.country} 
-                onChange={handleAddressCountryChange} 
-                options={countries} 
-                width="half" 
-              />
-              
-              {/* Cascading State Dropdown */}
-              <div className="space-y-2 col-span-1">
-                <label className="text-sm font-semibold text-[#347928]/80">Province/State</label>
-                {countryStateMap[formData.addressDetails.country] ? (
-                  <select
-                    name="province"
-                    value={formData.addressDetails.province || ''}
-                    onChange={(e) => handleChange(e, 'addressDetails')}
-                    className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-                  >
-                    <option value="">Select State</option>
-                    {countryStateMap[formData.addressDetails.country].map((st) => (
-                      <option key={st} value={st}>{st}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    name="province"
-                    value={formData.addressDetails.province || ''}
-                    onChange={(e) => handleChange(e, 'addressDetails')}
-                    placeholder="Enter Province/State"
-                    className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] placeholder:text-[#347928]/40 focus:border-[#347928] focus:ring-[#347928]"
-                  />
-                )}
+          {/* 3. Personal Information */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-100 bg-gray-50">
+              <h2 className="text-lg font-semibold">Personal Information</h2>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <InputGroup label="First Name" name="firstName" value={formData.personalInfo.firstName} onChange={handlePersonalChange} />
+                <InputGroup label="Middle Name" name="middleName" value={formData.personalInfo.middleName} onChange={handlePersonalChange} />
+                <InputGroup label="Last Name" name="lastName" value={formData.personalInfo.lastName} onChange={handlePersonalChange} />
               </div>
               
-              {/* Numeric Input for Postal Code */}
-              <InputField 
-                label="Postal/Zip Code" 
-                name="postalCode" 
-                value={formData.addressDetails.postalCode} 
-                onChange={(e) => handleNumericInput(e, 'addressDetails')} 
-                width="half"
-                inputMode="numeric" 
-                pattern="[0-9]*" 
-                placeholder="Numbers only"
-              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <InputGroup type="date" label="Date of Birth" name="dob" value={formData.personalInfo.dob} onChange={handlePersonalChange} />
+                <InputGroup label="First Language" name="firstLanguage" value={formData.personalInfo.firstLanguage} onChange={handlePersonalChange} />
+                <InputGroup label="Country of Citizenship" name="citizenship" value={formData.personalInfo.citizenship} onChange={handlePersonalChange} />
+              </div>
+
+              {/* Passport Section */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Passport Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <InputGroup label="Passport Number" name="passportNumber" value={formData.personalInfo.passport.number} onChange={handlePersonalChange} />
+                  <InputGroup type="date" label="Expiry Date" name="passportExpiry" value={formData.personalInfo.passport.expiryDate} onChange={handlePersonalChange} />
+                  <InputGroup label="Place of Birth" name="placeOfBirth" value={formData.personalInfo.passport.placeOfBirth} onChange={handlePersonalChange} />
+                </div>
+              </div>
+
+              {/* Radio Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Marital Status</label>
+                  <div className="flex gap-4">
+                    {['Single', 'Married'].map(status => (
+                      <label key={status} className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          name="maritalStatus" 
+                          value={status}
+                          checked={formData.personalInfo.maritalStatus === status}
+                          onChange={handlePersonalChange}
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-600">{status}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <div className="flex gap-4">
+                    {['Male', 'Female', 'Other'].map(g => (
+                      <label key={g} className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          name="gender" 
+                          value={g}
+                          checked={formData.personalInfo.gender === g}
+                          onChange={handlePersonalChange}
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-600">{g}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* === BACKGROUND INFORMATION === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <SectionHeader title="Background Information" icon="history" />
-            <div className="p-8 grid md:grid-cols-2 gap-6">
-              <SelectField label="Refused a Visa? (US, UK, Canada, etc)" name="refusedVisa" value={formData.backgroundInfo.refusedVisa || ''} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
-              <SelectField label="Valid Study Permit/Visa?" name="validStudyPermit" value={formData.backgroundInfo.validStudyPermit || ''} onChange={(e) => handleChange(e, 'backgroundInfo')} options={['Yes', 'No']} />
-              {(formData.backgroundInfo.refusedVisa === 'Yes' || formData.backgroundInfo.validStudyPermit === 'Yes') && (
-                 <InputField label="Provide Additional Details" name="details" value={formData.backgroundInfo.details} onChange={(e) => handleChange(e, 'backgroundInfo')} />
+          {/* 4. Address Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-4 bg-blue-50 border-b border-blue-100 flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-blue-800">Please provide your current residential address. This will be used for official correspondence.</p>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                <InputGroup label="Street Address" name="street" value={formData.address.street} onChange={handleAddressChange} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <InputGroup label="City" name="city" value={formData.address.city} onChange={handleAddressChange} />
+                <InputGroup label="State/Province" name="state" value={formData.address.state} onChange={handleAddressChange} />
+                <InputGroup label="Country" name="country" value={formData.address.country} onChange={handleAddressChange} />
+                <InputGroup label="Zip Code" name="zipCode" value={formData.address.zipCode} onChange={handleAddressChange} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                  <select 
+                    name="phoneCountryCode"
+                    value={formData.address.phoneCountryCode}
+                    onChange={handleAddressChange}
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 border"
+                  >
+                    <option value="+91">+91 (India)</option>
+                    <option value="+1">+1 (USA)</option>
+                    <option value="+44">+44 (UK)</option>
+                  </select>
+                </div>
+                <div className="md:col-span-3">
+                  <InputGroup label="Phone Number" name="phone" value={formData.address.phone} onChange={handleAddressChange} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Education Details (Repeater) */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Education History</h2>
+            
+            {formData.education.map((edu, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-gray-600" />
+                    <h3 className="font-semibold text-gray-800">{edu.schoolName || "New Institution"}</h3>
+                  </div>
+                  {formData.education.length > 1 && (
+                    <button type="button" onClick={() => removeSchool(index)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition">
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {/* Row 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Country of Institution</label>
+                      <select 
+                        value={edu.country}
+                        onChange={(e) => handleEducationChange(index, 'country', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                      >
+                        <option value="India">India</option>
+                        <option value="USA">USA</option>
+                        <option value="Canada">Canada</option>
+                      </select>
+                    </div>
+                    <div className="md:col-span-1">
+                      <InputGroup 
+                        label="School Name" 
+                        value={edu.schoolName}
+                        onChange={(e) => handleEducationChange(index, 'schoolName', e.target.value)}
+                        placeholder="Search for school..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Level of Education</label>
+                      <select 
+                        value={edu.level}
+                        onChange={(e) => handleEducationChange(index, 'level', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                      >
+                        <option value="High School">High School</option>
+                        <option value="Bachelors">Bachelor's Degree</option>
+                        <option value="Masters">Master's Degree</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Row 2 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Grading Scheme</label>
+                    <select 
+                      value={edu.gradingScheme}
+                      onChange={(e) => handleEducationChange(index, 'gradingScheme', e.target.value)}
+                      className="w-full md:w-1/3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                    >
+                      <option value="Percentage">Percentage (0-100)</option>
+                      <option value="GPA">GPA (4.0 Scale)</option>
+                      <option value="Letter">Letter Grade</option>
+                    </select>
+                  </div>
+
+                  {/* Row 3 */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <InputGroup label="Primary Language" value={edu.language} onChange={(e) => handleEducationChange(index, 'language', e.target.value)} />
+                    <InputGroup type="date" label="Attended From" value={edu.attendedFrom} onChange={(e) => handleEducationChange(index, 'attendedFrom', e.target.value)} />
+                    <InputGroup type="date" label="Attended To" value={edu.attendedTo} onChange={(e) => handleEducationChange(index, 'attendedTo', e.target.value)} />
+                  </div>
+
+                  {/* Row 4 */}
+                  <InputGroup label="Degree Name" value={edu.degreeName} onChange={(e) => handleEducationChange(index, 'degreeName', e.target.value)} />
+
+                  {/* Checkboxes & Logic */}
+                  <div className="space-y-4 pt-2">
+                    <label className="flex items-center gap-3">
+                      <input 
+                        type="checkbox" 
+                        checked={edu.isGraduated} 
+                        onChange={(e) => handleEducationChange(index, 'isGraduated', e.target.checked)}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                      />
+                      <span className="text-gray-700 font-medium">I have graduated from this institution</span>
+                    </label>
+
+                    {edu.isGraduated && (
+                      <div className="pl-8 w-full md:w-1/3">
+                        <InputGroup type="date" label="Graduation Date" value={edu.graduationDate} onChange={(e) => handleEducationChange(index, 'graduationDate', e.target.value)} />
+                      </div>
+                    )}
+
+                    <label className="flex items-center gap-3">
+                      <input 
+                        type="checkbox" 
+                        checked={edu.hasPhysicalCertificate} 
+                        onChange={(e) => handleEducationChange(index, 'hasPhysicalCertificate', e.target.checked)}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                      />
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        I have the physical certificate for this degree
+                        <Info className="w-4 h-4 text-gray-400" />
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* School Address Sub-section */}
+                  <div className="bg-gray-50/50 p-6 rounded-lg border border-gray-200 mt-6">
+                    <h4 className="font-bold text-gray-800 mb-4">School Address</h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <InputGroup 
+                          label="Address" 
+                          value={edu.schoolAddress.street} 
+                          onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'street')} 
+                        />
+                        <InputGroup 
+                          label="City/Town" 
+                          value={edu.schoolAddress.city} 
+                          onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'city')} 
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Province/State</label>
+                          <select 
+                            value={edu.schoolAddress.state}
+                            onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'state')}
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                          >
+                            <option value="">Select State</option>
+                            <option value="NY">New York</option>
+                            <option value="CA">California</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="w-full md:w-1/3">
+                        <InputGroup 
+                          label="Postal/Zip Code" 
+                          value={edu.schoolAddress.zipCode} 
+                          onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'zipCode')} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex justify-start">
+              <button 
+                type="button" 
+                onClick={addSchool} 
+                className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-transparent hover:bg-blue-50 font-medium rounded-lg transition"
+              >
+                <Plus className="w-5 h-5" /> Add School
+              </button>
+            </div>
+          </div>
+
+          {/* 6. Test Scores */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-100 bg-gray-50">
+              <h2 className="text-lg font-semibold">English Proficiency</h2>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="space-y-3">
+                <label className="flex items-center gap-3">
+                  <input 
+                    type="radio" 
+                    name="englishProficiency" 
+                    value="proof"
+                    checked={formData.testScores.englishProficiency === 'proof'}
+                    onChange={handleTestScoreChange}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700">I have or will have proofs of my English proficiency</span>
+                </label>
+                <label className="flex items-center gap-3">
+                  <input 
+                    type="radio" 
+                    name="englishProficiency" 
+                    value="exempt"
+                    checked={formData.testScores.englishProficiency === 'exempt'}
+                    onChange={handleTestScoreChange}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700">I am exempt from submitting English proficiency proof</span>
+                </label>
+              </div>
+
+              {formData.testScores.englishProficiency === 'proof' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
+                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
+                    <select 
+                      name="examType"
+                      value={formData.testScores.examType}
+                      onChange={handleTestScoreChange}
+                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                    >
+                      <option value="">Select Exam</option>
+                      <option value="Duolingo">Duolingo English Test</option>
+                      <option value="IELTS">IELTS</option>
+                      <option value="TOEFL">TOEFL</option>
+                    </select>
+                  </div>
+                  <InputGroup type="date" label="Date of Exam" name="examDate" value={formData.testScores.examDate} onChange={handleTestScoreChange} />
+                  <InputGroup label="Overall Score" name="overallScore" value={formData.testScores.overallScore} onChange={handleTestScoreChange} />
+                </div>
               )}
             </div>
           </div>
 
-          {/* === EDUCATION DETAILS === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <SectionHeader title="Education Details (Highest)" icon="school" />
-            <div className="p-8 grid md:grid-cols-2 gap-6">
-              <SelectField label="Country of Education" name="countryOfEducation" value={formData.educationDetails.countryOfEducation} onChange={(e) => handleChange(e, 'educationDetails')} options={countries} width="half" />
-              <InputField label="Highest Level of Education" name="highestLevel" value={formData.educationDetails.highestLevel} onChange={(e) => handleChange(e, 'educationDetails')} width="half" />
-              
-              {/* Updated Grading Scheme Dropdown */}
-              <SelectField 
-                label="Grading Scheme" 
-                name="gradingScheme" 
-                value={formData.educationDetails.gradingScheme} 
-                onChange={handleEducationSchemeChange} 
-                options={gradingSchemes} 
-                width="half" 
-              />
-
-              {/* Conditional Grading Average / Grade Dropdown or Input */}
-              <div className={`space-y-2 col-span-1`}>
-                <label className="text-sm font-semibold text-[#347928]/80">Grade Average / Grade</label>
-                {gradeOptions[formData.educationDetails.gradingScheme] ? (
-                  <select
-                    name="gradeAverage"
-                    value={formData.educationDetails.gradeAverage || ''}
-                    onChange={(e) => handleChange(e, 'educationDetails')}
-                    className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-                  >
-                    <option value="">Select Grade</option>
-                    {gradeOptions[formData.educationDetails.gradingScheme].map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="number"
-                    name="gradeAverage"
-                    value={formData.educationDetails.gradeAverage || ''}
-                    onChange={(e) => handleChange(e, 'educationDetails')}
-                    placeholder="Enter Grade/CGPA/Percentage"
-                    className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] placeholder:text-[#347928]/40 focus:border-[#347928] focus:ring-[#347928]"
-                  />
-                )}
-              </div>
-
-              <SelectField label="Graduated from Most Recent School?" name="graduatedMostRecent" value={formData.educationDetails.graduatedMostRecent || ''} onChange={(e) => handleChange(e, 'educationDetails')} options={['Yes', 'No']} />
-            </div>
-          </div>
-
-          {/* === SCHOOL HISTORY (Dynamic) === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <div className="px-8 py-6 border-b border-[#347928]/10 bg-[#C0EBA6]/20 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#347928]">history_edu</span>
-                    <h3 className="text-xl font-bold text-[#347928] font-display uppercase tracking-wider">School History</h3>
-                </div>
-                <button type="button" onClick={addSchool} className="bg-[#FCCD2A] hover:bg-yellow-400 text-[#347928] font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-lg">add_circle</span> Add School
-                </button>
-            </div>
-            
-            <div className="p-8 space-y-8">
-              {formData.schoolHistory.length === 0 && <p className="text-center italic text-gray-500">No school history added yet.</p>}
-              
-              {formData.schoolHistory.map((school, index) => (
-                <div key={index} className="border border-[#347928]/20 rounded-xl p-6 relative bg-gray-50">
-                    <button type="button" onClick={() => removeSchool(index)} className="absolute top-4 right-4 text-red-500 hover:text-red-700">
-                        <span className="material-symbols-outlined">delete</span>
-                    </button>
-                    
-                    <h4 className="font-bold text-[#347928] mb-4 border-b pb-2">School #{index + 1}</h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className={`space-y-2 col-span-1`}>
-                          <label className="text-sm font-semibold text-[#347928]/80">Country of Institution</label>
-                          <select
-                            name="countryOfInstitution"
-                            value={school.countryOfInstitution || ''}
-                            onChange={(e) => handleSchoolChange(index, e)}
-                            className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-                          >
-                            <option value="">Select Country</option>
-                            {countries.map((c) => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <InputField label="School Name" name="schoolName" value={school.schoolName} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <InputField label="Education Level" name="educationLevel" value={school.educationLevel} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        
-                        {/* School History - Grading Scheme */}
-                        <div className={`space-y-2 col-span-1`}>
-                          <label className="text-sm font-semibold text-[#347928]/80">Grading Scheme</label>
-                          <select
-                            name="gradingScheme"
-                            value={school.gradingScheme || ''}
-                            onChange={(e) => handleSchoolChange(index, e)}
-                            className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-                          >
-                            <option value="">Select Scheme</option>
-                            {gradingSchemes.map((s) => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* School History - Conditional Grade Average */}
-                        <div className={`space-y-2 col-span-1`}>
-                          <label className="text-sm font-semibold text-[#347928]/80">Grade / Average</label>
-                          {gradeOptions[school.gradingScheme] ? (
-                            <select
-                              name="gradeAverage"
-                              value={school.gradeAverage || ''}
-                              onChange={(e) => handleSchoolChange(index, e)}
-                              className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] focus:border-[#347928] focus:ring-[#347928]"
-                            >
-                              <option value="">Select Grade</option>
-                              {gradeOptions[school.gradingScheme].map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              name="gradeAverage"
-                              value={school.gradeAverage || ''}
-                              onChange={(e) => handleSchoolChange(index, e)}
-                              placeholder="Enter Grade"
-                              className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] placeholder:text-[#347928]/40 focus:border-[#347928] focus:ring-[#347928]"
-                            />
-                          )}
-                        </div>
-
-                        <InputField label="Primary Language" name="primaryLanguage" value={school.primaryLanguage} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <div className="grid grid-cols-2 gap-2 col-span-2 md:col-span-1">
-                            <InputField label="From" type="date" name="attendedFrom" value={school.attendedFrom ? school.attendedFrom.split('T')[0] : ''} onChange={(e) => handleSchoolChange(index, e)} />
-                            <InputField label="To" type="date" name="attendedTo" value={school.attendedTo ? school.attendedTo.split('T')[0] : ''} onChange={(e) => handleSchoolChange(index, e)} />
-                        </div>
-                        <InputField label="Degree Name" name="degreeName" value={school.degreeName} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <SelectField label="Graduated?" name="graduated" value={school.graduated || ''} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
-                        <InputField label="Graduation Date" type="date" name="graduationDate" value={school.graduationDate ? school.graduationDate.split('T')[0] : ''} onChange={(e) => handleSchoolChange(index, e)} width="half" />
-                        <SelectField label="Physical Certificate Available?" name="physicalCertificateAvailable" value={school.physicalCertificateAvailable || ''} onChange={(e) => handleSchoolChange(index, e)} options={['Yes', 'No']} width="half" />
-                    </div>
-
-                    {/* School Address Sub-section */}
-                    <div className="mt-6 bg-white p-4 rounded-lg border border-gray-200">
-                        <h5 className="font-semibold text-sm text-[#347928] uppercase mb-3">School Address</h5>
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <InputField label="Street Address" name="street" value={school.schoolAddress?.street} onChange={(e) => handleSchoolChange(index, e, 'schoolAddress')} />
-                            <InputField label="City/Town" name="city" value={school.schoolAddress?.city} onChange={(e) => handleSchoolChange(index, e, 'schoolAddress')} width="half" />
-                            <InputField label="Province/State" name="province" value={school.schoolAddress?.province} onChange={(e) => handleSchoolChange(index, e, 'schoolAddress')} width="half" />
-                            <InputField label="Postal/Zip Code" name="postalCode" value={school.schoolAddress?.postalCode} onChange={(e) => handleSchoolChange(index, e, 'schoolAddress')} width="half" inputMode="numeric" pattern="[0-9]*" placeholder="Numbers only"/>
-                        </div>
-                    </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* === TEST SCORES === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-            <SectionHeader title="Test Scores" icon="quiz" />
-            <div className="p-8 grid md:grid-cols-2 gap-6">
-              <SelectField label="Proof of Language Proficiency Available?" name="proofOfLanguageProficiency" value={formData.testScores.proofOfLanguageProficiency || ''} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} />
-              <SelectField label="Apply with Conditional Admission?" name="applyConditionalAdmission" value={formData.testScores.applyConditionalAdmission ? 'Yes' : 'No'} onChange={(e) => { const e2 = {...e}; e2.target.type = 'checkbox'; e2.target.checked = e.target.value === 'Yes'; handleChange(e2, 'testScores'); }} options={['Yes', 'No']} />
-              <InputField label="Language Test Status" name="languageTestStatus" value={formData.testScores.languageTestStatus} onChange={(e) => handleChange(e, 'testScores')} width="half" />
-              <SelectField label="Open to Language Proficiency Course?" name="openToProficiencyCourse" value={formData.testScores.openToProficiencyCourse || ''} onChange={(e) => handleChange(e, 'testScores')} options={['Yes', 'No']} width="half" />
-              <InputField label="GRE Exam Scores" name="greScores" value={formData.testScores.greScores} onChange={(e) => handleChange(e, 'testScores')} width="half" />
-              <InputField label="GMAT Exam Scores" name="gmatScores" value={formData.testScores.gmatScores} onChange={(e) => handleChange(e, 'testScores')} width="half" />
-            </div>
-          </div>
-
-          {/* === ADDITIONAL DETAILS === */}
-          <div className="bg-white rounded-2xl shadow-md border border-[#347928]/5 overflow-hidden">
-             <SectionHeader title="Additional Details" icon="more_horiz" />
-             <div className="p-8 space-y-6">
-                <InputField label="Emergency Contacts" name="emergencyContact" value={formData.additionalDetails.emergencyContact} onChange={(e) => handleChange(e, 'additionalDetails')} placeholder="Name: Phone" />
-                <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#347928]/80">Additional Notes</label>
-                    <textarea 
-                        name="additionalNotes" 
-                        value={formData.additionalDetails.additionalNotes} 
-                        onChange={(e) => handleChange(e, 'additionalDetails')}
-                        className="w-full rounded-lg border-[#347928]/20 bg-white px-4 py-2.5 text-[#347928] placeholder:text-[#347928]/40 focus:border-[#347928] focus:ring-[#347928] h-32"
-                    ></textarea>
-                </div>
-             </div>
-          </div>
-
-          <div className="flex justify-end pt-4 pb-12">
-            <button type="submit" className="h-14 px-12 bg-[#FCCD2A] text-[#347928] text-lg font-bold rounded-lg shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(52,121,40,1)] transition-all border border-[#347928]">
-              SAVE PROFILE
+          {/* Final Submit */}
+          <div className="flex justify-end pt-6">
+            <button 
+              type="submit" 
+              className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition shadow-lg"
+            >
+              Save Profile Application
             </button>
           </div>
 
@@ -604,5 +781,23 @@ const ProfileUpdate = () => {
     </div>
   );
 };
+
+// Reusable Input Component
+const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, required = false }) => (
+  <div className="w-full">
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label} {required && <span className="text-red-500">*</span>}</label>
+    <div className="relative">
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full rounded-lg border-gray-300 border shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 transition"
+      />
+      {type === 'date' && <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />}
+    </div>
+  </div>
+);
 
 export default ProfileUpdate;
