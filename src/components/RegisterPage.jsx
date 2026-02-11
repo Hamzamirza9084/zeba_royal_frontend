@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   
-  // 1. Initialize State for the form data
+  // 1. Initialize State for form data
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -14,19 +16,83 @@ const RegisterPage = () => {
     confirmPassword: ''
   });
 
+  // New: State for validation errors
+  const [errors, setErrors] = useState({});
+
   // 2. Function to handle typing in inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error for this field when user starts typing
+    if (errors[e.target.name]) {
+        setErrors({ ...errors, [e.target.name]: null });
+    }
+  };
+
+  // New: Validation Logic
+  const validateForm = () => {
+    let newErrors = {};
+    let isValid = true;
+
+    // Full Name Validation
+    if (!formData.fullName.trim()) {
+        newErrors.fullName = "Full Name is required";
+        isValid = false;
+    }
+
+    // Email Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+        isValid = false;
+    } else if (!emailRegex.test(formData.email)) {
+        newErrors.email = "Invalid email format";
+        isValid = false;
+    }
+
+    // Phone Number Validation
+    if (!formData.phoneNumber.trim()) {
+        newErrors.phoneNumber = "Phone Number is required";
+        isValid = false;
+    } else if (formData.phoneNumber.length < 10) {
+        newErrors.phoneNumber = "Phone number must be at least 10 digits";
+        isValid = false;
+    }
+
+    // Password Validation
+    if (!formData.password) {
+        newErrors.password = "Password is required";
+        isValid = false;
+    } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+        isValid = false;
+    }
+
+    // Confirm Password Validation
+    if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+        isValid = false;
+    }
+
+    setErrors(newErrors);
+    
+    // Optional: Toast error if validation fails globally
+    if (!isValid) {
+        toast.warn("Please fix the errors in the form.", {
+            position: "top-right",
+            autoClose: 3000,
+        });
+    }
+
+    return isValid;
   };
 
   // 3. Function to submit data to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+    // Run Validation before submitting
+    if (!validateForm()) {
+        return;
     }
 
     try {
@@ -39,17 +105,47 @@ const RegisterPage = () => {
       });
 
       if (response.data) {
-        alert("Registration Successful! Please Login.");
-        navigate('/login'); 
+        // Success Toast
+        toast.success("Registration Successful! Redirecting to Login...", {
+            position: "top-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            // Navigate after the toast closes
+            onClose: () => navigate('/login') 
+        });
       }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Registration failed");
+      // Error Toast
+      const errMsg = error.response?.data?.message || "Registration failed";
+      toast.error(errMsg, {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
   };
 
+  // Helper component for Error Message
+  const ErrorMsg = ({ msg }) => (
+    msg ? <span className="text-red-500 text-xs font-bold mt-1 ml-1">{msg}</span> : null
+  );
+
   return (
     <div className="bg-off-white font-display text-deep-green min-h-screen">
+      {/* Toast Container Configuration */}
+      <ToastContainer />
+
       <main className="w-full min-h-screen flex flex-col lg:flex-row">
         {/* Left Section: Branding & Features */}
         <section className="hidden lg:flex w-1/2 bg-deep-green p-12 lg:p-20 flex-col justify-between relative overflow-hidden sticky top-0 h-screen">
@@ -107,7 +203,6 @@ const RegisterPage = () => {
               <p className="text-deep-green/60 font-medium">Join the thousands of students already preparing with us.</p>
             </div>
 
-            {/* Changed onSubmit to execute handleSubmit */}
             <form className="grid grid-cols-1 md:grid-cols-2 gap-5" onSubmit={handleSubmit}>
               <div className="md:col-span-2">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-deep-green/40 mb-2 border-b border-light-green pb-2">Basic Information</h3>
@@ -119,11 +214,11 @@ const RegisterPage = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.fullName ? 'border-red-500' : 'border-light-green'} bg-white focus:ring-0 focus:border-deep-green transition-colors`} 
                   placeholder="John Doe" 
                   type="text" 
-                  required
                 />
+                <ErrorMsg msg={errors.fullName} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -132,11 +227,11 @@ const RegisterPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.email ? 'border-red-500' : 'border-light-green'} bg-white focus:ring-0 focus:border-deep-green transition-colors`} 
                   placeholder="john@example.com" 
                   type="email" 
-                  required
                 />
+                <ErrorMsg msg={errors.email} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -145,11 +240,11 @@ const RegisterPage = () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.phoneNumber ? 'border-red-500' : 'border-light-green'} bg-white focus:ring-0 focus:border-deep-green transition-colors`} 
                   placeholder="+1 (555) 000-0000" 
                   type="tel" 
-                  required
                 />
+                <ErrorMsg msg={errors.phoneNumber} />
               </div>
 
               <div className="flex flex-col gap-1.5 md:col-span-2">
@@ -158,25 +253,24 @@ const RegisterPage = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.password ? 'border-red-500' : 'border-light-green'} bg-white focus:ring-0 focus:border-deep-green transition-colors`} 
                   placeholder="••••••••" 
                   type="password" 
-                  required
                 />
+                <ErrorMsg msg={errors.password} />
               </div>
 
-              {/* ADDED MISSING CONFIRM PASSWORD FIELD */}
               <div className="flex flex-col gap-1.5 md:col-span-2">
                 <label className="text-sm font-bold text-deep-green/80 ml-1">Confirm Password</label>
                 <input 
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-light-green bg-white focus:ring-0 focus:border-deep-green transition-colors" 
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.confirmPassword ? 'border-red-500' : 'border-light-green'} bg-white focus:ring-0 focus:border-deep-green transition-colors`} 
                   placeholder="••••••••" 
                   type="password" 
-                  required
                 />
+                <ErrorMsg msg={errors.confirmPassword} />
               </div>
 
               <div className="md:col-span-2">

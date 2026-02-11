@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// Reusable Input Component
+// --- COMPONENTS ---
+
 const StyledInput = ({ label, type = "text", placeholder, className, value, onChange, name, ...props }) => (
   <div className={`flex flex-col gap-1.5 ${className}`}>
     {label && <label className="text-xs font-bold text-deep-green/80 ml-1 uppercase tracking-wide">{label}</label>}
@@ -18,7 +20,6 @@ const StyledInput = ({ label, type = "text", placeholder, className, value, onCh
   </div>
 );
 
-// Reusable Select Component
 const StyledSelect = ({ label, options, value, onChange, name, ...props }) => (
   <div className="flex flex-col gap-1.5">
     {label && <label className="text-xs font-bold text-deep-green/80 ml-1 uppercase tracking-wide">{label}</label>}
@@ -39,7 +40,6 @@ const StyledSelect = ({ label, options, value, onChange, name, ...props }) => (
   </div>
 );
 
-// Animated Accordion Section
 const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -81,8 +81,236 @@ const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
   );
 };
 
+// Extracted Filter Content to reuse in Mobile Drawer and Desktop Sidebar
+const FilterContent = ({ formData, handleChange, setFormData }) => {
+  return (
+    <div className="space-y-4">
+      {/* 1. Nationality & Origin */}
+      <FilterSection title="Nationality & Origin" icon="public" defaultOpen={true}>
+        <StyledSelect 
+          label="Nationality" 
+          name="nationality" 
+          value={formData.nationality} 
+          onChange={handleChange} 
+          options={["India", "Nigeria", "China", "Vietnam", "Philippines"]} 
+        />
+        <StyledSelect 
+          label="Country of Education" 
+          name="educationCountry" 
+          value={formData.educationCountry} 
+          onChange={handleChange} 
+          options={["India", "USA", "UK", "Canada"]} 
+        />
+      </FilterSection>
+
+      {/* 2. Academic Details */}
+      <FilterSection title="Academic History" icon="school">
+        <StyledSelect 
+          label="Highest Qualification" 
+          name="qualification" 
+          value={formData.qualification} 
+          onChange={handleChange} 
+          options={["Bachelor's Degree", "Master's Degree", "Diploma", "High School (12th)"]} 
+        />
+        <StyledInput 
+          label="Degree Name" 
+          name="degreeName" 
+          value={formData.degreeName} 
+          onChange={handleChange} 
+          placeholder="e.g. B.Tech Computer Science" 
+        />
+        <StyledInput 
+          label="University / College" 
+          name="collegeName" 
+          value={formData.collegeName} 
+          onChange={handleChange} 
+          placeholder="e.g. Mumbai University" 
+        />
+        
+        <div className="grid grid-cols-2 gap-3">
+          <StyledInput 
+              label="Grad. Year" 
+              name="gradYear" 
+              value={formData.gradYear} 
+              onChange={handleChange} 
+              type="number" 
+              placeholder="2024" 
+          />
+          <StyledInput 
+              label="CGPA / %" 
+              name="cgpa" 
+              value={formData.cgpa} 
+              onChange={handleChange} 
+              placeholder="8.5 or 85%" 
+          />
+        </div>
+        
+        <div className="pt-2">
+          <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">History of Backlogs?</label>
+          <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit">
+            {['No', 'Yes'].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setFormData(prev => ({ ...prev, backlogs: opt }))}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  formData.backlogs === opt 
+                    ? 'bg-deep-green text-primary shadow-sm' 
+                    : 'text-deep-green hover:bg-light-green/30'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+          
+          <AnimatePresence>
+            {formData.backlogs === 'Yes' && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3"
+              >
+                <StyledInput 
+                  label="Number of Backlogs" 
+                  name="backlogCount" 
+                  value={formData.backlogCount} 
+                  onChange={handleChange} 
+                  type="number" 
+                  placeholder="Total count" 
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </FilterSection>
+
+      {/* 3. English Proficiency */}
+      <FilterSection title="English Proficiency" icon="translate" defaultOpen={true}>
+        <div className="space-y-4">
+          <StyledSelect 
+              label="Test Type" 
+              name="englishTest" 
+              value={formData.englishTest} 
+              onChange={handleChange} 
+              options={["IELTS", "PTE", "TOEFL", "Duolingo", "Medium of Instruction (MOI)"]}
+          />
+
+          {formData.englishTest !== "Medium of Instruction (MOI)" && (
+              <motion.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }}
+                  className="space-y-3"
+              >
+                  <div className="grid grid-cols-5 gap-2 items-end">
+                      <div className="col-span-1"><StyledInput label="L" name="scoreL" value={formData.scoreL} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
+                      <div className="col-span-1"><StyledInput label="R" name="scoreR" value={formData.scoreR} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
+                      <div className="col-span-1"><StyledInput label="W" name="scoreW" value={formData.scoreW} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
+                      <div className="col-span-1"><StyledInput label="S" name="scoreS" value={formData.scoreS} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
+                      <div className="col-span-1"><StyledInput label="OA" name="scoreOA" value={formData.scoreOA} onChange={handleChange} placeholder="-" className="text-center bg-light-green/20 border-deep-green" /></div>
+                  </div>
+                  <StyledInput label="Test Date" name="testDate" value={formData.testDate} onChange={handleChange} type="date" />
+              </motion.div>
+          )}
+        </div>
+      </FilterSection>
+
+      {/* 4. Work Experience */}
+      <FilterSection title="Work Experience" icon="work">
+          <div>
+              <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">Do you have Work Exp?</label>
+              <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit mb-4">
+                  {['No', 'Yes'].map((opt) => (
+                  <button
+                      key={opt}
+                      onClick={() => setFormData(prev => ({ ...prev, workExp: opt }))}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      formData.workExp === opt 
+                          ? 'bg-deep-green text-primary shadow-sm' 
+                          : 'text-deep-green hover:bg-light-green/30'
+                      }`}
+                  >
+                      {opt}
+                  </button>
+                  ))}
+              </div>
+
+              <AnimatePresence>
+                  {formData.workExp === 'Yes' && (
+                  <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-3 overflow-hidden"
+                  >
+                      <div className="grid grid-cols-2 gap-3">
+                          <StyledInput label="Years" name="workExpYears" value={formData.workExpYears} onChange={handleChange} type="number" placeholder="0" />
+                          <StyledInput label="Months" name="workExpMonths" value={formData.workExpMonths} onChange={handleChange} type="number" placeholder="0" />
+                      </div>
+                      <StyledInput label="Field of Work" name="workField" value={formData.workField} onChange={handleChange} placeholder="e.g. Software Development" />
+                  </motion.div>
+                  )}
+              </AnimatePresence>
+          </div>
+      </FilterSection>
+
+      {/* 5. Course Preferences */}
+      <FilterSection title="Course Preferences" icon="tune" defaultOpen={true}>
+          <StyledInput 
+              label="Intended Course" 
+              name="intendedCourse" 
+              value={formData.intendedCourse} 
+              onChange={handleChange} 
+              placeholder="e.g. Data Science" 
+          />
+          <StyledInput 
+              label="Field / Stream" 
+              name="fieldStream" 
+              value={formData.fieldStream} 
+              onChange={handleChange} 
+              placeholder="e.g. Computer Science" 
+          />
+          
+          <StyledSelect 
+              label="Preferred Intake" 
+              name="intake" 
+              value={formData.intake} 
+              onChange={handleChange} 
+              options={["Any Intake", "Jan 2025", "May 2025", "Sep 2025"]} 
+          />
+          
+          <div className="pt-2">
+              <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Budget Range (Annual)</label>
+                  <span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">Max: ${formData.budget}</span>
+              </div>
+              <input 
+                  type="range" 
+                  name="budget"
+                  min="5000" 
+                  max="50000" 
+                  step="1000"
+                  value={formData.budget}
+                  onChange={handleChange}
+                  className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" 
+              />
+              <div className="flex justify-between text-[10px] font-bold text-deep-green/50 mt-1">
+                  <span>$5k</span>
+                  <span>$50k+</span>
+              </div>
+          </div>
+      </FilterSection>
+    </div>
+  );
+};
+
+
+// --- MAIN PAGE COMPONENT ---
+
 const CollegeSearch = () => {
-    
+  const navigate = useNavigate();
+  const [showMobileFilters, setShowMobileFilters] = useState(false); // State for mobile drawer
+
   // Filter State
   const [formData, setFormData] = useState({
     nationality: "India",
@@ -116,12 +344,29 @@ const CollegeSearch = () => {
   const [error, setError] = useState(null);
   const [filteredColleges, setFilteredColleges] = useState([]);
 
-  // Fetch Data on Mount
+  // Auth Check
+  useEffect(() => {
+    const checkStudentStatus = () => {
+      const userString = localStorage.getItem('user'); 
+      if (!userString) {
+        alert("Please login to access this page.");
+        navigate('/login'); 
+        return;
+      }
+      const user = JSON.parse(userString);
+      if (!user.token || user.role !== 'student') {
+        alert("Access Denied: You must be logged in as a Student to view this page.");
+        navigate('/'); 
+      }
+    };
+    checkStudentStatus();
+  }, [navigate]);
+
+  // Fetch Data
   useEffect(() => {
     const fetchColleges = async () => {
       try {
         setLoading(true);
-        // Assuming your backend route is /api/universities
         const { data } = await axios.get('/api/universities');
         setColleges(data);
         setFilteredColleges(data);
@@ -140,40 +385,36 @@ const CollegeSearch = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleReset = () => {
+    setFilteredColleges(colleges);
+    setFormData(prev => ({ ...prev, intendedCourse: "", budget: 50000 }));
+  };
+
   const handleEvaluate = () => {
-    // Client-side filtering logic based on formData
     let results = colleges;
 
-    // Filter by Intended Course (Fuzzy Search)
+    // ... (Filter logic remains same) ...
     if (formData.intendedCourse) {
       results = results.filter(uni => 
         uni.courseName?.toLowerCase().includes(formData.intendedCourse.toLowerCase()) || 
         uni.name?.toLowerCase().includes(formData.intendedCourse.toLowerCase())
       );
     }
-
-    // Filter by Budget (Simple parsing of fee string)
     if (formData.budget) {
       results = results.filter(uni => {
-        // Attempt to extract numeric value from fee string (e.g. "£16,000" -> 16000)
         const feeString = uni.tuitionFee || "0";
         const feeNumber = parseFloat(feeString.replace(/[^0-9.]/g, ''));
         return feeNumber <= parseFloat(formData.budget);
       });
     }
-
-    // Filter by CGPA (Simple numeric check if available)
     if (formData.cgpa) {
       results = results.filter(uni => {
         if (!uni.minCgpa) return true;
         const reqCgpa = parseFloat(uni.minCgpa.replace(/[^0-9.]/g, ''));
         const myCgpa = parseFloat(formData.cgpa);
-        // Simple logic: if user has higher CGPA than required (assuming both are same scale)
         return !isNaN(reqCgpa) && !isNaN(myCgpa) ? myCgpa >= reqCgpa : true;
       });
     }
-
-    // Filter by Backlogs
     if (formData.backlogs === "Yes" && formData.backlogCount) {
        results = results.filter(uni => {
          if (!uni.maxBacklogs) return true;
@@ -182,9 +423,9 @@ const CollegeSearch = () => {
     }
 
     setFilteredColleges(results);
+    setShowMobileFilters(false); // Close drawer on mobile after searching
   };
 
-  // Helper to determine icon based on university name/type
   const getIcon = (uni) => {
     if (uni.name?.toLowerCase().includes('college') || uni.courseLevel?.includes('Diploma')) return 'school';
     if (uni.courseName?.toLowerCase().includes('tech')) return 'computer';
@@ -192,9 +433,64 @@ const CollegeSearch = () => {
   };
 
   return (
-    <div className="flex flex-1 h-[calc(100vh-80px)] overflow-hidden bg-off-white font-display">
+    <div className="flex flex-1 h-[calc(100vh-80px)] overflow-hidden bg-off-white font-display relative">
       
-      {/* Sidebar - Desktop */}
+      {/* --- MOBILE DRAWER OVERLAY --- */}
+      <AnimatePresence>
+        {showMobileFilters && (
+          <>
+            {/* Dark Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileFilters(false)}
+              className="fixed inset-0 bg-deep-green/60 z-40 lg:hidden backdrop-blur-sm"
+            />
+            
+            {/* Sliding Panel */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[85%] max-w-[350px] bg-off-white z-50 overflow-y-auto flex flex-col shadow-2xl lg:hidden"
+            >
+              <div className="p-5 flex justify-between items-center border-b border-deep-green/10 bg-white">
+                <h2 className="text-xl font-extrabold text-deep-green">Filters</h2>
+                <button 
+                  onClick={() => setShowMobileFilters(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 text-deep-green transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div className="p-5 flex-1 overflow-y-auto">
+                 <FilterContent 
+                    formData={formData} 
+                    handleChange={handleChange} 
+                    setFormData={setFormData} 
+                 />
+              </div>
+
+              <div className="p-5 border-t border-deep-green/10 bg-white sticky bottom-0">
+                <button 
+                  onClick={handleEvaluate}
+                  className="w-full h-12 bg-primary text-deep-green text-sm font-extrabold rounded-xl border border-deep-green shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined">search_check</span>
+                  Apply Filters
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+      {/* ---------------------------------- */}
+
+
+      {/* Sidebar - Desktop (Hidden on mobile via 'hidden lg:flex') */}
       <aside className="w-[420px] border-r border-deep-green/10 bg-off-white overflow-y-auto custom-scrollbar hidden lg:flex flex-col z-10">
         <div className="p-6 pb-24 space-y-6">
           <div className="flex items-center justify-between">
@@ -203,10 +499,7 @@ const CollegeSearch = () => {
               <p className="text-deep-green/60 text-xs font-medium mt-1">Refine criteria to find your fit</p>
             </div>
             <button 
-                onClick={() => {
-                    setFilteredColleges(colleges);
-                    setFormData(prev => ({ ...prev, intendedCourse: "", budget: 50000 }));
-                }}
+                onClick={handleReset}
                 className="size-10 rounded-full hover:bg-light-green/30 flex items-center justify-center transition-colors text-deep-green" 
                 title="Reset Filters"
             >
@@ -214,229 +507,14 @@ const CollegeSearch = () => {
             </button>
           </div>
 
-          <div className="space-y-4">
-            
-            {/* 1. Nationality & Origin */}
-            <FilterSection title="Nationality & Origin" icon="public" defaultOpen={true}>
-              <StyledSelect 
-                label="Nationality" 
-                name="nationality" 
-                value={formData.nationality} 
-                onChange={handleChange} 
-                options={["India", "Nigeria", "China", "Vietnam", "Philippines"]} 
-              />
-              <StyledSelect 
-                label="Country of Education" 
-                name="educationCountry" 
-                value={formData.educationCountry} 
-                onChange={handleChange} 
-                options={["India", "USA", "UK", "Canada"]} 
-              />
-            </FilterSection>
-
-            {/* 2. Academic Details */}
-            <FilterSection title="Academic History" icon="school">
-              <StyledSelect 
-                label="Highest Qualification" 
-                name="qualification" 
-                value={formData.qualification} 
-                onChange={handleChange} 
-                options={["Bachelor's Degree", "Master's Degree", "Diploma", "High School (12th)"]} 
-              />
-              <StyledInput 
-                label="Degree Name" 
-                name="degreeName" 
-                value={formData.degreeName} 
-                onChange={handleChange} 
-                placeholder="e.g. B.Tech Computer Science" 
-              />
-              <StyledInput 
-                label="University / College" 
-                name="collegeName" 
-                value={formData.collegeName} 
-                onChange={handleChange} 
-                placeholder="e.g. Mumbai University" 
-              />
-              
-              <div className="grid grid-cols-2 gap-3">
-                <StyledInput 
-                    label="Grad. Year" 
-                    name="gradYear" 
-                    value={formData.gradYear} 
-                    onChange={handleChange} 
-                    type="number" 
-                    placeholder="2024" 
-                />
-                <StyledInput 
-                    label="CGPA / %" 
-                    name="cgpa" 
-                    value={formData.cgpa} 
-                    onChange={handleChange} 
-                    placeholder="8.5 or 85%" 
-                />
-              </div>
-              
-              {/* Backlogs Toggle */}
-              <div className="pt-2">
-                <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">History of Backlogs?</label>
-                <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit">
-                  {['No', 'Yes'].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => setFormData(prev => ({ ...prev, backlogs: opt }))}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                        formData.backlogs === opt 
-                          ? 'bg-deep-green text-primary shadow-sm' 
-                          : 'text-deep-green hover:bg-light-green/30'
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-                
-                <AnimatePresence>
-                  {formData.backlogs === 'Yes' && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-3"
-                    >
-                      <StyledInput 
-                        label="Number of Backlogs" 
-                        name="backlogCount" 
-                        value={formData.backlogCount} 
-                        onChange={handleChange} 
-                        type="number" 
-                        placeholder="Total count" 
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </FilterSection>
-
-            {/* 3. English Proficiency */}
-            <FilterSection title="English Proficiency" icon="translate" defaultOpen={true}>
-              <div className="space-y-4">
-                <StyledSelect 
-                    label="Test Type" 
-                    name="englishTest" 
-                    value={formData.englishTest} 
-                    onChange={handleChange} 
-                    options={["IELTS", "PTE", "TOEFL", "Duolingo", "Medium of Instruction (MOI)"]}
-                />
-
-                {formData.englishTest !== "Medium of Instruction (MOI)" && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }}
-                        className="space-y-3"
-                    >
-                        <div className="grid grid-cols-5 gap-2 items-end">
-                            <div className="col-span-1"><StyledInput label="L" name="scoreL" value={formData.scoreL} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                            <div className="col-span-1"><StyledInput label="R" name="scoreR" value={formData.scoreR} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                            <div className="col-span-1"><StyledInput label="W" name="scoreW" value={formData.scoreW} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                            <div className="col-span-1"><StyledInput label="S" name="scoreS" value={formData.scoreS} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                            <div className="col-span-1"><StyledInput label="OA" name="scoreOA" value={formData.scoreOA} onChange={handleChange} placeholder="-" className="text-center bg-light-green/20 border-deep-green" /></div>
-                        </div>
-                        <StyledInput label="Test Date" name="testDate" value={formData.testDate} onChange={handleChange} type="date" />
-                    </motion.div>
-                )}
-              </div>
-            </FilterSection>
-
-            {/* 4. Work Experience */}
-            <FilterSection title="Work Experience" icon="work">
-                <div>
-                    <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">Do you have Work Exp?</label>
-                    <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit mb-4">
-                        {['No', 'Yes'].map((opt) => (
-                        <button
-                            key={opt}
-                            onClick={() => setFormData(prev => ({ ...prev, workExp: opt }))}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                            formData.workExp === opt 
-                                ? 'bg-deep-green text-primary shadow-sm' 
-                                : 'text-deep-green hover:bg-light-green/30'
-                            }`}
-                        >
-                            {opt}
-                        </button>
-                        ))}
-                    </div>
-
-                    <AnimatePresence>
-                        {formData.workExp === 'Yes' && (
-                        <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="space-y-3 overflow-hidden"
-                        >
-                            <div className="grid grid-cols-2 gap-3">
-                                <StyledInput label="Years" name="workExpYears" value={formData.workExpYears} onChange={handleChange} type="number" placeholder="0" />
-                                <StyledInput label="Months" name="workExpMonths" value={formData.workExpMonths} onChange={handleChange} type="number" placeholder="0" />
-                            </div>
-                            <StyledInput label="Field of Work" name="workField" value={formData.workField} onChange={handleChange} placeholder="e.g. Software Development" />
-                        </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </FilterSection>
-
-            {/* 5. Course Preferences */}
-            <FilterSection title="Course Preferences" icon="tune" defaultOpen={true}>
-                <StyledInput 
-                    label="Intended Course" 
-                    name="intendedCourse" 
-                    value={formData.intendedCourse} 
-                    onChange={handleChange} 
-                    placeholder="e.g. Data Science" 
-                />
-                <StyledInput 
-                    label="Field / Stream" 
-                    name="fieldStream" 
-                    value={formData.fieldStream} 
-                    onChange={handleChange} 
-                    placeholder="e.g. Computer Science" 
-                />
-                
-                <StyledSelect 
-                    label="Preferred Intake" 
-                    name="intake" 
-                    value={formData.intake} 
-                    onChange={handleChange} 
-                    options={["Any Intake", "Jan 2025", "May 2025", "Sep 2025"]} 
-                />
-                
-                <div className="pt-2">
-                    <div className="flex justify-between items-center mb-2">
-                        <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Budget Range (Annual)</label>
-                        <span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">Max: ${formData.budget}</span>
-                    </div>
-                    <input 
-                        type="range" 
-                        name="budget"
-                        min="5000" 
-                        max="50000" 
-                        step="1000"
-                        value={formData.budget}
-                        onChange={handleChange}
-                        className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" 
-                    />
-                    <div className="flex justify-between text-[10px] font-bold text-deep-green/50 mt-1">
-                        <span>$5k</span>
-                        <span>$50k+</span>
-                    </div>
-                </div>
-            </FilterSection>
-
-          </div>
+          {/* Reusing the extracted content */}
+          <FilterContent 
+             formData={formData} 
+             handleChange={handleChange} 
+             setFormData={setFormData} 
+          />
         </div>
 
-        {/* Sticky Sidebar Footer */}
         <div className="sticky bottom-0 bg-off-white p-6 border-t border-deep-green/10 backdrop-blur-xl bg-opacity-90">
           <button 
             onClick={handleEvaluate}
@@ -454,7 +532,7 @@ const CollegeSearch = () => {
           
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <div>
+            <div className="flex-1">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-light-green/30 border border-light-green w-fit mb-3">
                 <span className="size-2 rounded-full bg-deep-green animate-pulse"></span>
                 <span className="text-xs font-bold uppercase tracking-wide text-deep-green">Live Results</span>
@@ -463,10 +541,22 @@ const CollegeSearch = () => {
               <p className="text-deep-green/70 mt-2 font-medium">Found <span className="text-deep-green font-black underline decoration-primary decoration-4 underline-offset-2">{filteredColleges.length}</span> programs based on your profile.</p>
             </div>
             
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-deep-green/10 bg-white text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm hover:shadow-md">
-              <span className="material-symbols-outlined text-[20px]">download</span>
-              Export PDF
-            </button>
+            <div className="flex gap-3">
+               {/* NEW MOBILE FILTER BUTTON */}
+               <button 
+                 onClick={() => setShowMobileFilters(true)}
+                 className="lg:hidden flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-deep-green/10 bg-white text-deep-green font-bold hover:bg-light-green/20 transition-all shadow-sm"
+               >
+                 <span className="material-symbols-outlined text-[20px]">filter_list</span>
+                 Filters
+               </button>
+
+               <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-deep-green/10 bg-white text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm hover:shadow-md">
+                 <span className="material-symbols-outlined text-[20px]">download</span>
+                 <span className="hidden sm:inline">Export PDF</span>
+                 <span className="sm:hidden">PDF</span>
+               </button>
+            </div>
           </div>
 
           {/* Error Message */}
@@ -504,8 +594,7 @@ const CollegeSearch = () => {
                    }}
                    className="bg-white rounded-2xl border-2 border-transparent hover:border-light-green p-6 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col relative overflow-hidden"
                  >
-                   {/* Decorative blob on hover */}
-                  <div className="absolute -right-12 -top-12 w-32 h-32 bg-light-green/20 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div> 
+                   <div className="absolute -right-12 -top-12 w-32 h-32 bg-light-green/20 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div> 
 
                    <div className="flex justify-between items-start mb-6 relative z-10">
                      <div className="size-16 rounded-2xl bg-off-white border border-deep-green/10 flex items-center justify-center shadow-inner text-deep-green">
@@ -537,7 +626,6 @@ const CollegeSearch = () => {
                    </div>
 
                    <div className="flex flex-wrap gap-2 mb-8 relative z-10">
-                     {/* Combine ranking and other tags if available */}
                      {college.ranking && (
                         <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">
                             {college.ranking}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -30,24 +32,47 @@ const LoginPage = () => {
         // Save user info and token to local storage
         localStorage.setItem('user', JSON.stringify(response.data));
         
-        // Alert success
-        alert("Login Successful!");
-        
-        // Redirect based on role
-        if (response.data.role === 'admin') {
-           navigate('/admin'); 
-        } else {
-           navigate('/colleges');
-        }
+        // Success Toast with Redirect callback
+        toast.success("Login Successful! Redirecting...", {
+            position: "top-center",
+            autoClose: 1500,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+            onClose: () => {
+                // Redirect based on role after toast closes
+                if (response.data.role === 'admin') {
+                   navigate('/admin'); 
+                } else {
+                   navigate('/colleges');
+                }
+            }
+        });
       }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Invalid Email or Password");
+      const errMsg = error.response?.data?.message || "Invalid Email or Password";
+      
+      // Error Toast
+      toast.error(errMsg, {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
     }
   };
 
   return (
     <div className="min-h-screen bg-off-white font-display text-deep-green overflow-hidden flex">
+      {/* Toast Notification Container */}
+      <ToastContainer />
+
       {/* Left Section: Visual & Branding (Hidden on mobile) */}
       <section className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-light-green/20">
         <div className="relative z-20 flex items-center gap-3">
@@ -123,8 +148,6 @@ const LoginPage = () => {
               />
             </div>
 
-            
-
             <button 
               className="w-full h-14 bg-primary text-deep-green font-extrabold rounded-xl border border-deep-green shadow-[4px_4px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(52,121,40,1)] transition-all"
               type="submit"
@@ -132,10 +155,6 @@ const LoginPage = () => {
               Login to Dashboard
             </button>
           </form>
-
-            
-
-        
 
           <p className="mt-10 text-center text-sm font-medium text-deep-green/60">
             Don't have an account? 

@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://zeba-royal-backend.onrender.com', // Updated to your Render URL
+        target: 'http://localhost:5000', // Updated to your Render URL
         changeOrigin: true,
-        secure: true, // Set to true for https
+        secure: true, // Set to true for https  //https://zeba-royal-backend.onrender.com
       },
     },
   },
