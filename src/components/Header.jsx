@@ -63,6 +63,30 @@ const Header = () => {
                   <p className="text-xs text-deep-green/60 mt-0.5">{user.email}</p>
                </div>
                
+               {/* My Applications Link */}
+               {(user.role === 'student' || user.role === 'user') && (
+                 <Link 
+                   to="/applications" 
+                   className="flex items-center gap-2 bg-deep-green/5 hover:bg-deep-green/10 text-deep-green px-3 py-2 rounded-lg transition-all"
+                   title="My Applications"
+                 >
+                   <span className="material-symbols-outlined text-[20px]">assignment</span>
+                   <span className="text-sm font-bold hidden lg:block">Apps</span>
+                 </Link>
+               )}
+
+               {/* Admin Link */}
+               {user.role === 'admin' && (
+                 <Link 
+                   to="/admin" 
+                   className="flex items-center gap-2 bg-deep-green/5 hover:bg-deep-green/10 text-deep-green px-3 py-2 rounded-lg transition-all"
+                   title="Admin Dashboard"
+                 >
+                   <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                   <span className="text-sm font-bold hidden lg:block">Admin</span>
+                 </Link>
+               )}
+               
                {/* Updated Profile Link with Icon */}
                <Link 
                 to="/profile/update" 

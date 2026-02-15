@@ -31,6 +31,8 @@ const ProfileUpdate = () => {
         schoolName: "",
         level: "Bachelors",
         gradingScheme: "Percentage",
+        score: "",
+        scoreScale: "100",
         language: "English",
         attendedFrom: "",
         attendedTo: "",
@@ -141,7 +143,7 @@ const ProfileUpdate = () => {
       education: [
         ...prev.education,
         {
-          country: "", schoolName: "", level: "", gradingScheme: "",
+          country: "", schoolName: "", level: "", gradingScheme: "", score: "", scoreScale: "100",
           language: "", attendedFrom: "", attendedTo: "", degreeName: "",
           isGraduated: true, graduationDate: "", hasPhysicalCertificate: false,
           schoolAddress: { street: "", city: "", state: "", zipCode: "" }
@@ -405,36 +407,36 @@ const ProfileUpdate = () => {
           
           {/* 2. Smart Document Vault */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" /> Smart Document Vault
-              </h2>
-            </div>
+              <div className="p-6 border-b border-deep-green/10 flex justify-between items-center bg-off-white">
+                <h2 className="text-lg font-semibold flex items-center gap-2 text-deep-green">
+                  <FileText className="w-5 h-5 text-deep-green" /> Smart Document Vault
+                </h2>
+              </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left: Upload Zone */}
-              <div className="border-2 border-dashed border-blue-200 rounded-lg p-8 flex flex-col items-center justify-center bg-blue-50/50 hover:bg-blue-50 transition cursor-pointer">
-                <div className="bg-blue-100 p-3 rounded-full mb-3">
-                  <Upload className="w-6 h-6 text-blue-600" />
+              <div className="border-2 border-dashed border-deep-green/30 rounded-lg p-8 flex flex-col items-center justify-center bg-off-white hover:bg-off-white/95 transition cursor-pointer">
+                <div className="bg-light-green p-3 rounded-full mb-3">
+                  <Upload className="w-6 h-6 text-deep-green" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">Drag & Drop files here</p>
-                <p className="text-xs text-gray-400 mt-1">or click to browse (PDF, JPG, PNG)</p>
+                <p className="text-sm font-medium text-deep-green">Drag & Drop files here</p>
+                <p className="text-xs text-deep-green/60 mt-1">or click to browse (PDF)</p>
                 <input type="file" accept=".pdf" onChange={handleFileSelect} className="mt-3" />
               </div>
 
               {/* Right: File List */}
               <div className="space-y-3">
                 {formData.documents.map((doc, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-white border border-deep-green/10 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-700">{doc.fileName}</span>
+                      <FileText className="w-4 h-4 text-deep-green/70" />
+                      <span className="text-sm font-medium text-deep-green">{doc.fileName}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium border border-green-200">
+                      <span className="px-2 py-1 bg-light-green text-deep-green text-xs rounded-full font-medium border border-light-green/60">
                         {doc.status}
                       </span>
-                      <button type="button" onClick={() => handleView(doc)} className="text-gray-400 hover:text-blue-600"><Eye className="w-4 h-4" /></button>
-                      <button type="button" onClick={() => handleDelete(doc)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => handleView(doc)} className="text-deep-green/70 hover:text-deep-green"><Eye className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => handleDelete(doc)} className="text-deep-green/70 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
                 ))}
@@ -515,8 +517,8 @@ const ProfileUpdate = () => {
           {/* 4. Address Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-4 bg-blue-50 border-b border-blue-100 flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-blue-800">Please provide your current residential address. This will be used for official correspondence.</p>
+              <Info className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <p className="text-sm text-green-800">Please provide your current residential address. This will be used for official correspondence.</p>
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-6">
@@ -551,14 +553,14 @@ const ProfileUpdate = () => {
 
           {/* 5. Education Details (Repeater) */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Education History</h2>
+            <h2 className="text-2xl font-bold text-deep-green">Education History</h2>
             
             {formData.education.map((edu, index) => (
               <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                <div className="p-4 bg-off-white border-b border-deep-green/10 flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-semibold text-gray-800">{edu.schoolName || "New Institution"}</h3>
+                    <GraduationCap className="w-5 h-5 text-deep-green" />
+                    <h3 className="font-semibold text-deep-green">{edu.schoolName || "New Institution"}</h3>
                   </div>
                   {formData.education.length > 1 && (
                     <button type="button" onClick={() => removeSchool(index)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition">
@@ -605,17 +607,59 @@ const ProfileUpdate = () => {
                   </div>
 
                   {/* Row 2 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Grading Scheme</label>
-                    <select 
-                      value={edu.gradingScheme}
-                      onChange={(e) => handleEducationChange(index, 'gradingScheme', e.target.value)}
-                      className="w-full md:w-1/3 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
-                    >
-                      <option value="Percentage">Percentage (0-100)</option>
-                      <option value="GPA">GPA (4.0 Scale)</option>
-                      <option value="Letter">Letter Grade</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Grading Scheme</label>
+                      <select 
+                        value={edu.gradingScheme}
+                        onChange={(e) => handleEducationChange(index, 'gradingScheme', e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                      >
+                        <option value="Percentage">Percentage (0-100)</option>
+                        <option value="GPA">GPA (4.0 Scale, 10.0 Scale etc)</option>
+                        <option value="Letter">Letter Grade</option>
+                      </select>
+                    </div>
+
+                    <InputGroup 
+                      label={
+                        edu.gradingScheme === 'Percentage' ? "Percentage Achieved (%)" : 
+                        edu.gradingScheme === 'GPA' ? "GPA / CGPA Score" : 
+                        "Grade / Score"
+                      }
+                      value={edu.score} 
+                      onChange={(e) => handleEducationChange(index, 'score', e.target.value)} 
+                      placeholder={
+                        edu.gradingScheme === 'Percentage' ? "e.g. 85.5" : 
+                        edu.gradingScheme === 'GPA' ? "e.g. 3.5 or 8.5" : 
+                        "e.g. A+"
+                      }
+                      type={edu.gradingScheme === 'Letter' ? "text" : "number"}
+                    />
+
+                    {edu.gradingScheme !== 'Percentage' && (
+                       <InputGroup 
+                        label={
+                          edu.gradingScheme === 'GPA' ? "Scale (Max GPA)" : 
+                          "Score Scale (Optional)"
+                        }
+                        value={edu.scoreScale} 
+                        onChange={(e) => handleEducationChange(index, 'scoreScale', e.target.value)} 
+                        placeholder={
+                          edu.gradingScheme === 'GPA' ? "e.g. 4.0 or 10.0" : 
+                          "e.g. 100"
+                        }
+                      />
+                    )}
+                    
+                    {edu.gradingScheme === 'Percentage' && (
+                       <div className="w-full">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Scale</label>
+                          <div className="w-full rounded-lg bg-gray-100 border border-gray-200 py-2.5 px-3 text-gray-500 text-sm">
+                            Out of 100
+                          </div>
+                       </div>
+                    )}
                   </div>
 
                   {/* Row 3 */}
@@ -635,7 +679,7 @@ const ProfileUpdate = () => {
                         type="checkbox" 
                         checked={edu.isGraduated} 
                         onChange={(e) => handleEducationChange(index, 'isGraduated', e.target.checked)}
-                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                        className="w-5 h-5 text-deep-green rounded focus:ring-deep-green border-deep-green/30"
                       />
                       <span className="text-gray-700 font-medium">I have graduated from this institution</span>
                     </label>
@@ -651,7 +695,7 @@ const ProfileUpdate = () => {
                         type="checkbox" 
                         checked={edu.hasPhysicalCertificate} 
                         onChange={(e) => handleEducationChange(index, 'hasPhysicalCertificate', e.target.checked)}
-                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                        className="w-5 h-5 text-deep-green rounded focus:ring-deep-green border-deep-green/30"
                       />
                       <span className="text-gray-700 font-medium flex items-center gap-2">
                         I have the physical certificate for this degree
@@ -661,8 +705,8 @@ const ProfileUpdate = () => {
                   </div>
 
                   {/* School Address Sub-section */}
-                  <div className="bg-gray-50/50 p-6 rounded-lg border border-gray-200 mt-6">
-                    <h4 className="font-bold text-gray-800 mb-4">School Address</h4>
+                  <div className="bg-off-white/50 p-6 rounded-lg border border-deep-green/10 mt-6">
+                    <h4 className="font-bold text-deep-green mb-4">School Address</h4>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <InputGroup 
@@ -705,7 +749,7 @@ const ProfileUpdate = () => {
               <button 
                 type="button" 
                 onClick={addSchool} 
-                className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-transparent hover:bg-blue-50 font-medium rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 text-green-600 bg-transparent hover:bg-blue-50 font-medium rounded-lg transition"
               >
                 <Plus className="w-5 h-5" /> Add School
               </button>
@@ -770,7 +814,7 @@ const ProfileUpdate = () => {
           <div className="flex justify-end pt-6">
             <button 
               type="submit" 
-              className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition shadow-lg"
+              className="px-8 py-3 bg-primary text-deep-green font-bold rounded-xl hover:bg-primary/90 focus:ring-4 focus:ring-primary/30 transition shadow-md flex items-center gap-2"
             >
               Save Profile Application
             </button>
@@ -783,7 +827,7 @@ const ProfileUpdate = () => {
 };
 
 // Reusable Input Component
-const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, required = false }) => (
+const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, required = false, ...props }) => (
   <div className="w-full">
     <label className="block text-sm font-medium text-gray-700 mb-1">{label} {required && <span className="text-red-500">*</span>}</label>
     <div className="relative">
@@ -794,6 +838,7 @@ const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, 
         onChange={onChange}
         placeholder={placeholder}
         className="w-full rounded-lg border-gray-300 border shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 transition"
+        {...props}
       />
       {type === 'date' && <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />}
     </div>

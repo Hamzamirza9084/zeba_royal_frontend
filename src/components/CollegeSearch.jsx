@@ -82,223 +82,110 @@ const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
 };
 
 // Extracted Filter Content to reuse in Mobile Drawer and Desktop Sidebar
-const FilterContent = ({ formData, handleChange, setFormData }) => {
+const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, institutions = [] }) => {
   return (
     <div className="space-y-4">
-      {/* 1. Nationality & Origin */}
-      <FilterSection title="Nationality & Origin" icon="public" defaultOpen={true}>
-        <StyledSelect 
-          label="Nationality" 
-          name="nationality" 
-          value={formData.nationality} 
-          onChange={handleChange} 
-          options={["India", "Nigeria", "China", "Vietnam", "Philippines"]} 
-        />
-        <StyledSelect 
-          label="Country of Education" 
-          name="educationCountry" 
-          value={formData.educationCountry} 
-          onChange={handleChange} 
-          options={["India", "USA", "UK", "Canada"]} 
-        />
-      </FilterSection>
+      {/* 6. Program Filters */}
+      <FilterSection title="Program Filters" icon="school" defaultOpen={true}>
+        <div className="space-y-4">
+          
+          {/* Dropdowns Group 1 */}
+          <div className="grid grid-cols-2 gap-3">
+             <StyledSelect label="Destination" name="destination" value={formData.destination || ""} onChange={handleChange} options={["", "Canada", "Australia", "USA", "UK", "Germany"]} />
+             <StyledSelect label="Institution" name="institution" value={formData.institution || ""} onChange={handleChange} options={["", ...institutions]} />
+          </div>
 
-      {/* 2. Academic Details */}
-      <FilterSection title="Academic History" icon="school">
-        <StyledSelect 
-          label="Highest Qualification" 
-          name="qualification" 
-          value={formData.qualification} 
-          onChange={handleChange} 
-          options={["Bachelor's Degree", "Master's Degree", "Diploma", "High School (12th)"]} 
-        />
-        <StyledInput 
-          label="Degree Name" 
-          name="degreeName" 
-          value={formData.degreeName} 
-          onChange={handleChange} 
-          placeholder="e.g. B.Tech Computer Science" 
-        />
-        <StyledInput 
-          label="University / College" 
-          name="collegeName" 
-          value={formData.collegeName} 
-          onChange={handleChange} 
-          placeholder="e.g. Mumbai University" 
-        />
-        
-        <div className="grid grid-cols-2 gap-3">
-          <StyledInput 
-              label="Grad. Year" 
-              name="gradYear" 
-              value={formData.gradYear} 
-              onChange={handleChange} 
-              type="number" 
-              placeholder="2024" 
-          />
-          <StyledInput 
-              label="CGPA / %" 
-              name="cgpa" 
-              value={formData.cgpa} 
-              onChange={handleChange} 
-              placeholder="8.5 or 85%" 
-          />
-        </div>
-        
-        <div className="pt-2">
-          <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">History of Backlogs?</label>
-          <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit">
-            {['No', 'Yes'].map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setFormData(prev => ({ ...prev, backlogs: opt }))}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  formData.backlogs === opt 
-                    ? 'bg-deep-green text-primary shadow-sm' 
-                    : 'text-deep-green hover:bg-light-green/30'
-                }`}
-              >
-                {opt}
-              </button>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+               <div className="flex items-center gap-1 mb-1.5"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Institution Type</label><span className="material-symbols-outlined text-[16px] text-deep-green/60" title="Type">info</span></div>
+               <select name="institutionType" value={formData.institutionType || ""} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green text-sm font-medium focus:outline-none focus:border-deep-green"><option value="">Select</option><option>University</option><option>College</option></select>
+            </div>
+             <StyledSelect label="Program Level" name="programLevel" value={formData.programLevel || ""} onChange={handleChange} options={["", "Bachelor's", "Master's", "Diploma"]} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+             <StyledSelect label="Field of Study" name="fieldOfStudy" value={formData.fieldOfStudy || ""} onChange={handleChange} options={["", "Engineering", "Business", "Health", "Arts"]} />
+             <StyledSelect label="Tuition (1st year)" name="tuition" value={formData.tuition || ""} onChange={handleChange} options={["", "Low", "Medium", "High"]} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+             <StyledSelect label="Intakes" name="intakes" value={formData.intakes || ""} onChange={handleChange} options={["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]} />
+             <StyledSelect label="Intake Status" name="intakeStatus" value={formData.intakeStatus || ""} onChange={handleChange} options={["", "Open", "Closed"]} />
+          </div>
+
+          <div>
+             <div className="flex items-center gap-1 mb-1.5"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Program Tag</label><span className="material-symbols-outlined text-[16px] text-deep-green/60" title="Tag">info</span></div>
+             <select name="programTag" value={formData.programTag || ""} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green text-sm font-medium focus:outline-none focus:border-deep-green"><option value="">Select Tag</option><option>Co-op</option><option>Internship</option></select>
+          </div>
+
+          {/* Checkboxes */}
+          <div className="space-y-3 pt-4 border-t border-light-green/30">
+            {[
+              { name: 'pgwp', label: 'Only programs eligible for PGWP', info: 'Post-Graduation Work Permit' },
+              { name: 'visaCap', label: 'Exempt from Canadian Visa Cap', info: 'Cap Exemption', badge: 'NEW' },
+              { name: 'freeApplications', label: 'Only programs with free applications' },
+              { name: 'excludePathway', label: 'Exclude Pathway Programs', info: 'Pathway Exclusion', badge: 'NEW' }
+            ].map((item) => (
+              <label key={item.name} className="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name={item.name} checked={formData[item.name] || false} onChange={handleChange} className="w-4 h-4 rounded accent-deep-green cursor-pointer" />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-medium text-deep-green group-hover:text-deep-green/80 transition-colors">{item.label}</span>
+                  {item.info && <span className="material-symbols-outlined text-[16px] text-deep-green/50" title={item.info}>info</span>}
+                  {item.badge && <span className="px-1.5 py-0.5 bg-primary text-deep-green text-[9px] font-bold rounded-full">{item.badge}</span>}
+                </div>
+              </label>
             ))}
           </div>
-          
-          <AnimatePresence>
-            {formData.backlogs === 'Yes' && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-3"
-              >
-                <StyledInput 
-                  label="Number of Backlogs" 
-                  name="backlogCount" 
-                  value={formData.backlogCount} 
-                  onChange={handleChange} 
-                  type="number" 
-                  placeholder="Total count" 
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </FilterSection>
 
-      {/* 3. English Proficiency */}
-      <FilterSection title="English Proficiency" icon="translate" defaultOpen={true}>
-        <div className="space-y-4">
-          <StyledSelect 
-              label="Test Type" 
-              name="englishTest" 
-              value={formData.englishTest} 
-              onChange={handleChange} 
-              options={["IELTS", "PTE", "TOEFL", "Duolingo", "Medium of Instruction (MOI)"]}
-          />
-
-          {formData.englishTest !== "Medium of Instruction (MOI)" && (
-              <motion.div 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }}
-                  className="space-y-3"
-              >
-                  <div className="grid grid-cols-5 gap-2 items-end">
-                      <div className="col-span-1"><StyledInput label="L" name="scoreL" value={formData.scoreL} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                      <div className="col-span-1"><StyledInput label="R" name="scoreR" value={formData.scoreR} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                      <div className="col-span-1"><StyledInput label="W" name="scoreW" value={formData.scoreW} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                      <div className="col-span-1"><StyledInput label="S" name="scoreS" value={formData.scoreS} onChange={handleChange} placeholder="-" className="text-center px-1" /></div>
-                      <div className="col-span-1"><StyledInput label="OA" name="scoreOA" value={formData.scoreOA} onChange={handleChange} placeholder="-" className="text-center bg-light-green/20 border-deep-green" /></div>
-                  </div>
-                  <StyledInput label="Test Date" name="testDate" value={formData.testDate} onChange={handleChange} type="date" />
-              </motion.div>
-          )}
-        </div>
-      </FilterSection>
-
-      {/* 4. Work Experience */}
-      <FilterSection title="Work Experience" icon="work">
-          <div>
-              <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-2">Do you have Work Exp?</label>
-              <div className="flex gap-2 bg-white p-1 rounded-xl border-2 border-light-green w-fit mb-4">
-                  {['No', 'Yes'].map((opt) => (
-                  <button
-                      key={opt}
-                      onClick={() => setFormData(prev => ({ ...prev, workExp: opt }))}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      formData.workExp === opt 
-                          ? 'bg-deep-green text-primary shadow-sm' 
-                          : 'text-deep-green hover:bg-light-green/30'
-                      }`}
-                  >
-                      {opt}
-                  </button>
-                  ))}
+          {/* Sliders */}
+          <div className="space-y-6 pt-4 border-t border-light-green/30">
+            {/* Duration */}
+            <div>
+              <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-3">Program Duration (months)</label>
+              <div className="flex gap-3 items-center">
+                <input type="number" value={formData.programDurationMin || 1} onChange={(e) => setFormData(p => ({...p, programDurationMin: +e.target.value}))} className="w-14 px-1 py-1 text-center border-2 border-light-green rounded-lg text-sm font-bold text-deep-green focus:outline-none focus:border-deep-green" />
+                <div className="flex-1 relative h-2 bg-light-green/30 rounded-full">
+                   <input type="range" min="1" max="96" value={formData.programDurationMin || 1} onChange={(e) => setFormData(p => ({...p, programDurationMin: +e.target.value}))} className="absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                   <div className="absolute top-0 h-full bg-deep-green rounded-full" style={{ left: `${((formData.programDurationMin || 1) / 96) * 100}%`, right: `${100 - ((formData.programDurationMax || 96) / 96) * 100}%` }}></div>
+                   <input type="range" min="1" max="96" value={formData.programDurationMax || 96} onChange={(e) => setFormData(p => ({...p, programDurationMax: +e.target.value}))} className="absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                </div>
+                <input type="number" value={formData.programDurationMax || 96} onChange={(e) => setFormData(p => ({...p, programDurationMax: +e.target.value}))} className="w-14 px-1 py-1 text-center border-2 border-light-green rounded-lg text-sm font-bold text-deep-green focus:outline-none focus:border-deep-green" />
               </div>
+            </div>
 
-              <AnimatePresence>
-                  {formData.workExp === 'Yes' && (
-                  <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-3 overflow-hidden"
-                  >
-                      <div className="grid grid-cols-2 gap-3">
-                          <StyledInput label="Years" name="workExpYears" value={formData.workExpYears} onChange={handleChange} type="number" placeholder="0" />
-                          <StyledInput label="Months" name="workExpMonths" value={formData.workExpMonths} onChange={handleChange} type="number" placeholder="0" />
-                      </div>
-                      <StyledInput label="Field of Work" name="workField" value={formData.workField} onChange={handleChange} placeholder="e.g. Software Development" />
-                  </motion.div>
-                  )}
-              </AnimatePresence>
+            {/* Study Gap */}
+            <div>
+               <div className="flex justify-between items-center mb-2"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Study Gap (years)</label><span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">{formData.studyGap || 0}</span></div>
+               <input type="range" min="0" max="10" step="0.5" value={formData.studyGap || 0} onChange={(e) => setFormData(p => ({...p, studyGap: +e.target.value}))} className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" />
+            </div>
+
+            {/* Backlog */}
+            <div>
+               <div className="flex justify-between items-center mb-2"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Backlogs</label><span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">{formData.backlog || 0}</span></div>
+               <input type="range" min="0" max="20" step="1" value={formData.backlog || 0} onChange={(e) => setFormData(p => ({...p, backlog: +e.target.value}))} className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" />
+            </div>
           </div>
-      </FilterSection>
 
-      {/* 5. Course Preferences */}
-      <FilterSection title="Course Preferences" icon="tune" defaultOpen={true}>
-          <StyledInput 
-              label="Intended Course" 
-              name="intendedCourse" 
-              value={formData.intendedCourse} 
-              onChange={handleChange} 
-              placeholder="e.g. Data Science" 
-          />
-          <StyledInput 
-              label="Field / Stream" 
-              name="fieldStream" 
-              value={formData.fieldStream} 
-              onChange={handleChange} 
-              placeholder="e.g. Computer Science" 
-          />
-          
-          <StyledSelect 
-              label="Preferred Intake" 
-              name="intake" 
-              value={formData.intake} 
-              onChange={handleChange} 
-              options={["Any Intake", "Jan 2025", "May 2025", "Sep 2025"]} 
-          />
-          
+          {/* Student Requirements */}
+          <div className="space-y-4 pt-4 border-t border-light-green/30">
+             <div className="flex items-center gap-2"><h3 className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Student Requirements</h3><span className="material-symbols-outlined text-[16px] text-deep-green/60">info</span></div>
+             <div className="space-y-3">
+                <StyledSelect label="Prerequisite Missing" name="prerequisiteMissing" value={formData.prerequisiteMissing || ""} onChange={handleChange} options={["", "None", "Some", "All"]} />
+                <StyledSelect label="Background Gap" name="educationBackgroundMissing" value={formData.educationBackgroundMissing || ""} onChange={handleChange} options={["", "None", "Minor", "Major"]} />
+             </div>
+          </div>
+
           <div className="pt-2">
-              <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Budget Range (Annual)</label>
-                  <span className="text-xs font-bold text-deep-green bg-light-green/30 px-2 py-0.5 rounded">Max: ${formData.budget}</span>
-              </div>
-              <input 
-                  type="range" 
-                  name="budget"
-                  min="5000" 
-                  max="50000" 
-                  step="1000"
-                  value={formData.budget}
-                  onChange={handleChange}
-                  className="w-full h-2 bg-light-green/30 rounded-lg appearance-none cursor-pointer accent-deep-green" 
-              />
-              <div className="flex justify-between text-[10px] font-bold text-deep-green/50 mt-1">
-                  <span>$5k</span>
-                  <span>$50k+</span>
-              </div>
+            <button 
+              onClick={handleEvaluate}
+              className="w-full py-3 bg-primary text-deep-green font-bold rounded-xl border border-deep-green/20 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">calculate</span>
+              Calculate Based on Profile
+            </button>
           </div>
+
+        </div>
       </FilterSection>
     </div>
   );
@@ -336,7 +223,26 @@ const CollegeSearch = () => {
     intendedCourse: "",
     fieldStream: "",
     intake: "Any Intake",
-    budget: 25000
+    budget: 25000,
+    destination: "",
+    institution: "",
+    institutionType: "",
+    programLevel: "",
+    fieldOfStudy: "",
+    tuition: "",
+    intakes: "",
+    intakeStatus: "",
+    programTag: "",
+    pgwp: false,
+    visaCap: false,
+    freeApplications: false,
+    excludePathway: false,
+    programDurationMin: 1,
+    programDurationMax: 96,
+    studyGap: 0,
+    backlog: 0,
+    prerequisiteMissing: "",
+    educationBackgroundMissing: ""
   });
 
   const [colleges, setColleges] = useState([]);
@@ -354,7 +260,8 @@ const CollegeSearch = () => {
         return;
       }
       const user = JSON.parse(userString);
-      if (!user.token || user.role !== 'student') {
+      // Allow both 'student' and 'user' roles to access
+      if (!user.token || (user.role !== 'student' && user.role !== 'user')) {
         alert("Access Denied: You must be logged in as a Student to view this page.");
         navigate('/'); 
       }
@@ -380,50 +287,208 @@ const CollegeSearch = () => {
     fetchColleges();
   }, []);
 
+  // Pre-fill from Profile
+  useEffect(() => {
+    try {
+      const userString = localStorage.getItem('user');
+      if (userString) {
+        const user = JSON.parse(userString);
+        console.log("Loaded Profile for Search:", user); // Debug log
+
+        setFormData(prev => {
+          const newData = { ...prev };
+          
+          // Safer mapping with optional chaining
+          if (user.personalInfo?.citizenship) newData.nationality = user.personalInfo.citizenship;
+          if (user.education && user.education.length > 0) {
+             const edu = user.education[0]; // Assuming most recent is first
+             if (edu.country) newData.educationCountry = edu.country;
+             if (edu.level) newData.qualification = edu.level;
+             // Check for grade/cgpa
+             if (edu.grade) newData.cgpa = edu.grade; 
+          }
+          
+          // Map intended destination if available in profile (e.g. from a preferences field if it existed)
+          // For now, we only map explicit matches.
+          
+          return newData;
+        });
+      }
+    } catch (e) { console.error("Error loading profile", e); }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+        const newData = { ...prev, [name]: value };
+        
+        // Auto-clear dependent filters to avoid conflicts
+        if (name === 'destination') {
+            newData.institution = ""; 
+        }
+        
+        return newData;
+    });
   };
 
   const handleReset = () => {
+    // Reset filters to their initial empty states
+    setFormData({
+        nationality: "India",
+        educationCountry: "India",
+        qualification: "Bachelor's Degree",
+        degreeName: "",
+        collegeName: "",
+        gradYear: "",
+        cgpa: "",
+        backlogs: "No",
+        backlogCount: "",
+        englishTest: "IELTS",
+        scoreL: "",
+        scoreR: "",
+        scoreW: "",
+        scoreS: "",
+        scoreOA: "",
+        testDate: "",
+        workExp: "No",
+        workExpYears: "",
+        workExpMonths: "",
+        workField: "",
+        intendedCourse: "",
+        fieldStream: "",
+        intake: "Any Intake",
+        budget: 25000,
+        destination: "",
+        institution: "",
+        institutionType: "",
+        programLevel: "",
+        fieldOfStudy: "",
+        tuition: "",
+        intakes: "",
+        intakeStatus: "",
+        programTag: "",
+        pgwp: false,
+        visaCap: false,
+        freeApplications: false,
+        excludePathway: false,
+        programDurationMin: 1,
+        programDurationMax: 96,
+        studyGap: 0,
+        backlog: 0,
+        prerequisiteMissing: "",
+        educationBackgroundMissing: ""
+    });
+    // Immediately show all colleges again
     setFilteredColleges(colleges);
-    setFormData(prev => ({ ...prev, intendedCourse: "", budget: 50000 }));
+  };
+
+  const handleApply = async (universityId) => {
+    try {
+      const userString = localStorage.getItem('user');
+      if (!userString) {
+        alert("Please login to apply.");
+        navigate('/login');
+        return;
+      }
+      const user = JSON.parse(userString);
+      const config = {
+        headers: { Authorization: `Bearer ${user.token}` }
+      };
+
+      await axios.post('/api/applications', { universityId }, config);
+      alert("Application submitted successfully!");
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Failed to submit application.");
+    }
   };
 
   const handleEvaluate = () => {
-    let results = colleges;
+    console.log("Evaluating with filters:", formData);
+    // Always start filtering from the full list of colleges
+    let results = [...colleges];
 
-    // ... (Filter logic remains same) ...
-    if (formData.intendedCourse) {
+    // 1. Destination (Country)
+    if (formData.destination) {
+      results = results.filter(uni => {
+        const match = uni.country?.toLowerCase().trim() === formData.destination.toLowerCase().trim();
+        return match;
+      });
+    }
+
+    // 2. Institution Name
+    if (formData.institution) {
+      results = results.filter(uni => uni.name?.toLowerCase().includes(formData.institution.toLowerCase().trim()));
+    }
+
+    // 3. Institution Type
+    if (formData.institutionType) {
+       // Assuming 'type' field exists or inferring from name
+       results = results.filter(uni => 
+         uni.name?.toLowerCase().includes(formData.institutionType.toLowerCase()) ||
+         uni.type?.toLowerCase() === formData.institutionType.toLowerCase()
+       );
+    }
+
+    // 4. Program Level
+    if (formData.programLevel) {
+      results = results.filter(uni => uni.courseLevel?.toLowerCase().includes(formData.programLevel.toLowerCase()));
+    }
+
+    // 5. Field of Study
+    const courseQuery = formData.fieldOfStudy;
+    if (courseQuery) {
       results = results.filter(uni => 
-        uni.courseName?.toLowerCase().includes(formData.intendedCourse.toLowerCase()) || 
-        uni.name?.toLowerCase().includes(formData.intendedCourse.toLowerCase())
+        uni.courseName?.toLowerCase().includes(courseQuery.toLowerCase()) || 
+        uni.tags?.some(t => t.toLowerCase().includes(courseQuery.toLowerCase()))
       );
     }
-    if (formData.budget) {
+
+    // 6. Tuition
+    if (formData.tuition) {
       results = results.filter(uni => {
-        const feeString = uni.tuitionFee || "0";
-        const feeNumber = parseFloat(feeString.replace(/[^0-9.]/g, ''));
-        return feeNumber <= parseFloat(formData.budget);
+        const fee = parseFloat((uni.tuitionFee || "0").replace(/[^0-9.]/g, ''));
+        if (formData.tuition === "Low") return fee < 15000;
+        if (formData.tuition === "Medium") return fee >= 15000 && fee <= 30000;
+        if (formData.tuition === "High") return fee > 30000;
+        return true;
       });
-    }
-    if (formData.cgpa) {
-      results = results.filter(uni => {
-        if (!uni.minCgpa) return true;
-        const reqCgpa = parseFloat(uni.minCgpa.replace(/[^0-9.]/g, ''));
-        const myCgpa = parseFloat(formData.cgpa);
-        return !isNaN(reqCgpa) && !isNaN(myCgpa) ? myCgpa >= reqCgpa : true;
-      });
-    }
-    if (formData.backlogs === "Yes" && formData.backlogCount) {
-       results = results.filter(uni => {
-         if (!uni.maxBacklogs) return true;
-         return parseInt(formData.backlogCount) <= parseInt(uni.maxBacklogs);
-       });
     }
 
+    // 7. Intakes
+    if (formData.intakes) {
+      results = results.filter(uni => uni.intakes?.toLowerCase().includes(formData.intakes.toLowerCase()));
+    }
+
+    // 8. Program Tag
+    if (formData.programTag) {
+      results = results.filter(uni => uni.tags?.includes(formData.programTag));
+    }
+
+    // 9. Checkboxes
+    if (formData.pgwp) {
+      results = results.filter(uni => uni.tags?.includes('PGWP') || uni.pgwp === true || uni.pgwp === 'Yes');
+    }
+
+    // 10. Sliders - Study Gap
+    if (formData.studyGap > 0) {
+      results = results.filter(uni => {
+        if (!uni.gapLimit) return true; 
+        return parseFloat(formData.studyGap) <= parseFloat(uni.gapLimit);
+      });
+    }
+
+    // 11. Sliders - Backlog
+    if (formData.backlog > 0) {
+      results = results.filter(uni => {
+        if (!uni.maxBacklogs) return true;
+        return parseInt(formData.backlog) <= parseInt(uni.maxBacklogs);
+      });
+    }
+
+    console.log("Filtered Results:", results.length);
     setFilteredColleges(results);
-    setShowMobileFilters(false); // Close drawer on mobile after searching
+    setShowMobileFilters(false);
   };
 
   const getIcon = (uni) => {
@@ -471,6 +536,13 @@ const CollegeSearch = () => {
                     formData={formData} 
                     handleChange={handleChange} 
                     setFormData={setFormData} 
+                    handleEvaluate={handleEvaluate}
+                    // Same dynamic filtering for mobile
+                    institutions={[...new Set(
+                       colleges
+                       .filter(c => !formData.destination || c.country?.toLowerCase().trim() === formData.destination.toLowerCase().trim())
+                       .map(c => c.name)
+                    )].sort()}
                  />
               </div>
 
@@ -512,6 +584,13 @@ const CollegeSearch = () => {
              formData={formData} 
              handleChange={handleChange} 
              setFormData={setFormData} 
+             handleEvaluate={handleEvaluate}
+             // Dynamically filter institutions based on selected Destination
+             institutions={[...new Set(
+                colleges
+                .filter(c => !formData.destination || c.country?.toLowerCase().trim() === formData.destination.toLowerCase().trim())
+                .map(c => c.name)
+             )].sort()}
           />
         </div>
 
@@ -574,6 +653,7 @@ const CollegeSearch = () => {
           ) : (
              /* Grid */
              <motion.div 
+               key={filteredColleges.map(c => c._id).join(',')}
                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                initial="hidden"
                animate="show"
@@ -643,7 +723,10 @@ const CollegeSearch = () => {
                      ))}
                    </div>
 
-                   <button className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-bold hover:border-deep-green hover:bg-deep-green hover:text-white transition-all flex items-center justify-center gap-2 group-hover:shadow-md relative z-10">
+                   <button 
+                     onClick={() => handleApply(college._id)}
+                     className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-bold hover:border-deep-green hover:bg-deep-green hover:text-white transition-all flex items-center justify-center gap-2 group-hover:shadow-md relative z-10"
+                   >
                      Apply for Application
                      <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                    </button>

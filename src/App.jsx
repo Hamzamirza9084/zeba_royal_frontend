@@ -7,6 +7,10 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage'
 import CollegeSearch from './components/CollegeSearch';
 import AdminAddUniversity from './components/AdminAddUniversity';
+import AdminStudentList from './components/AdminStudentList';
+import AdminStudentDetails from './components/AdminStudentDetails';
+import AdminApplications from './components/AdminApplications';
+import MyApplications from './components/MyApplications';
 import ProfileUpdate from './components/ProfileUpdate';
 
 const MainLayout = ({ children }) => (
@@ -42,9 +46,19 @@ function App() {
             <ProfileUpdate />
           </MainLayout>
         } />
+
+        {/* My Applications Route */}
+        <Route path="/applications" element={
+          <MainLayout>
+            <MyApplications />
+          </MainLayout>
+        } />
         
         {/* Admin Route */}
         <Route path="/admin" element={<AdminAddUniversity />} />
+        <Route path="/admin/students" element={<AdminStudentList />} />
+        <Route path="/admin/students/:id" element={<AdminStudentDetails />} />
+        <Route path="/admin/applications" element={<AdminApplications />} />
       </Routes>
     </Router>
   );

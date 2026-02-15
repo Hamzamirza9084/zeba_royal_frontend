@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 // --- Reusable Styled Components ---
 
@@ -167,13 +167,23 @@ const AdminAddUniversity = () => {
         <div className="max-w-3xl mx-auto space-y-8 pb-32">
           
           {/* Page Header */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-deep-green/10 border border-deep-green/20 w-fit mb-4">
-              <span className="material-symbols-outlined text-[18px] text-deep-green">admin_panel_settings</span>
-              <span className="text-xs font-bold uppercase tracking-wide text-deep-green">Admin Portal</span>
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-deep-green/10 border border-deep-green/20 w-fit mb-4">
+                <span className="material-symbols-outlined text-[18px] text-deep-green">admin_panel_settings</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-deep-green">Admin Portal</span>
+              </div>
+              <h1 className="text-4xl font-extrabold text-deep-green tracking-tight">Add New Program</h1>
+              <p className="text-deep-green/60 mt-2 font-medium">Enter detailed admission rules and course information.</p>
             </div>
-            <h1 className="text-4xl font-extrabold text-deep-green tracking-tight">Add New Program</h1>
-            <p className="text-deep-green/60 mt-2 font-medium">Enter detailed admission rules and course information.</p>
+            <Link to="/admin/applications" className="px-5 py-2.5 rounded-xl bg-deep-green/10 text-deep-green font-bold hover:bg-deep-green/20 transition-colors flex items-center gap-2 whitespace-nowrap">
+              <span className="material-symbols-outlined">assignment</span>
+              Manage Applications
+            </Link>
+            <Link to="/admin/students" className="px-5 py-2.5 rounded-xl bg-deep-green/10 text-deep-green font-bold hover:bg-deep-green/20 transition-colors flex items-center gap-2 whitespace-nowrap">
+              <span className="material-symbols-outlined">group</span>
+              View Students
+            </Link>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -204,7 +214,7 @@ const AdminAddUniversity = () => {
                 <StyledSelect label="Course Level" name="courseLevel" value={formData.courseLevel} onChange={handleChange} options={["Postgraduate (PG)", "Undergraduate (UG)", "Diploma", "PhD"]} />
                 <StyledInput label="Duration" name="duration" value={formData.duration} onChange={handleChange} placeholder="e.g. 1 Year" />
                 <StyledInput label="Tuition Fee" name="tuitionFee" value={formData.tuitionFee} onChange={handleChange} placeholder="e.g. £16,000" />
-                <StyledInput label="Intake Availability" name="intakes" value={formData.intakes} onChange={handleChange} placeholder="e.g. Jan, Sep" />
+                <StyledInput label="Intake Availability" name="intakes" value={formData.intakes} onChange={handleChange} placeholder="e.g. January, September" />
               </div>
             </section>
 
