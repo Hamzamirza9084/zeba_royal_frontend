@@ -115,9 +115,9 @@ const Header = () => {
                 Login
               </Link>
               
-              <Link 
-                to="/register" 
-                className="hidden sm:flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-deep-green text-sm font-bold border border-deep-green shadow-[3px_3px_0px_0px_rgba(52,121,40,1)] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(52,121,40,1)] transition-all"
+              <Link
+                to="/register"
+                className="hidden sm:flex items-center justify-center rounded-lg h-10 px-6 bg-[#0F4C3A] text-white text-sm font-bold border border-[#0F4C3A] shadow-[3px_3px_0px_0px_rgba(15,76,58,1)] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(15,76,58,1)] transition-all"
               >
                 Register Now
               </Link>

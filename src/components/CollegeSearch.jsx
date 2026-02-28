@@ -3,6 +3,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// --- Utility Functions ---
+
+// Generate intake options for 2 years from current date
+const generateIntakeOptions = () => {
+  const intakes = [];
+  const currentDate = new Date();
+  const startMonth = currentDate.getMonth(); // 0-11
+  const startYear = currentDate.getFullYear();
+  
+  // Generate intakes for 24 months (2 years) from now
+  for (let i = 0; i < 24; i++) {
+    const month = (startMonth + i) % 12;
+    const year = startYear + Math.floor((startMonth + i) / 12);
+    
+    const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+    intakes.push(`${monthName} ${year}`);
+  }
+  
+  return intakes;
+};
+
 // --- COMPONENTS ---
 
 const StyledInput = ({ label, type = "text", placeholder, className, value, onChange, name, ...props }) => (
@@ -82,7 +103,7 @@ const FilterSection = ({ title, icon, children, defaultOpen = false }) => {
 };
 
 // Extracted Filter Content to reuse in Mobile Drawer and Desktop Sidebar
-const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, institutions = [] }) => {
+const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, institutions = [], destinations = [], programLevels = [], fieldOfStudies = [] }) => {
   return (
     <div className="space-y-4">
       {/* 6. Program Filters */}
@@ -91,25 +112,60 @@ const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, in
           
           {/* Dropdowns Group 1 */}
           <div className="grid grid-cols-2 gap-3">
-             <StyledSelect label="Destination" name="destination" value={formData.destination || ""} onChange={handleChange} options={["", "Canada", "Australia", "USA", "UK", "Germany"]} />
+             <StyledSelect label="Destination" name="destination" value={formData.destination || ""} onChange={handleChange} options={["", ...destinations]} />
              <StyledSelect label="Institution" name="institution" value={formData.institution || ""} onChange={handleChange} options={["", ...institutions]} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-               <div className="flex items-center gap-1 mb-1.5"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Institution Type</label><span className="material-symbols-outlined text-[16px] text-deep-green/60" title="Type">info</span></div>
-               <select name="institutionType" value={formData.institutionType || ""} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green text-sm font-medium focus:outline-none focus:border-deep-green"><option value="">Select</option><option>University</option><option>College</option></select>
-            </div>
-             <StyledSelect label="Program Level" name="programLevel" value={formData.programLevel || ""} onChange={handleChange} options={["", "Bachelor's", "Master's", "Diploma"]} />
+             <StyledSelect label="Program Level" name="programLevel" value={formData.programLevel || ""} onChange={handleChange} options={["", ...programLevels]} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-             <StyledSelect label="Field of Study" name="fieldOfStudy" value={formData.fieldOfStudy || ""} onChange={handleChange} options={["", "Engineering", "Business", "Health", "Arts"]} />
-             <StyledSelect label="Tuition (1st year)" name="tuition" value={formData.tuition || ""} onChange={handleChange} options={["", "Low", "Medium", "High"]} />
+             <StyledSelect label="Field of Study" name="fieldOfStudy" value={formData.fieldOfStudy || ""} onChange={handleChange} options={["", ...fieldOfStudies]} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-             <StyledSelect label="Intakes" name="intakes" value={formData.intakes || ""} onChange={handleChange} options={["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]} />
+          <div>
+             <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-3">Fees (1st year)</label>
+             <div className="flex gap-3 items-center">
+                <input type="number" value={formData.tuitionMin || 0} onChange={(e) => setFormData(p => ({...p, tuitionMin: +e.target.value}))} className="w-20 px-1 py-1 text-center border-2 border-light-green rounded-lg text-sm font-bold text-deep-green focus:outline-none focus:border-deep-green" />
+                <div className="flex-1 relative h-2 bg-light-green/30 rounded-full">
+                   <input type="range" min="0" max="100000" value={formData.tuitionMin || 0} onChange={(e) => setFormData(p => ({...p, tuitionMin: +e.target.value}))} className="absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                   <div className="absolute top-0 h-full bg-deep-green rounded-full" style={{ left: `${((formData.tuitionMin || 0) / 100000) * 100}%`, right: `${100 - ((formData.tuitionMax || 100000) / 100000) * 100}%` }}></div>
+                   <input type="range" min="0" max="100000" value={formData.tuitionMax || 100000} onChange={(e) => setFormData(p => ({...p, tuitionMax: +e.target.value}))} className="absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                </div>
+                <input type="number" value={formData.tuitionMax || 100000} onChange={(e) => setFormData(p => ({...p, tuitionMax: +e.target.value}))} className="w-20 px-1 py-1 text-center border-2 border-light-green rounded-lg text-sm font-bold text-deep-green focus:outline-none focus:border-deep-green" />
+             </div>
+          </div>
+
+          <div>
+             <label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide block mb-3">Intakes</label>
+             <div className="flex gap-2 mb-3">
+                <select value={formData._intakeInput || ""} onChange={(e) => setFormData(p => ({...p, _intakeInput: e.target.value}))} className="flex-1 px-3 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green focus:outline-none focus:border-deep-green text-sm font-medium">
+                   <option value="">Select intake...</option>
+                   {generateIntakeOptions().map((opt, i) => <option key={i} value={opt}>{opt}</option>)}
+                </select>
+                <button onClick={(e) => {
+                   e.preventDefault();
+                   if (formData._intakeInput && !formData.intakes.includes(formData._intakeInput)) {
+                     setFormData(p => ({...p, intakes: [...p.intakes, p._intakeInput], _intakeInput: ""}));
+                   }
+                }} className="px-4 py-2.5 bg-deep-green text-white font-bold rounded-xl hover:bg-deep-green/80 transition-colors text-sm">
+                   Add
+                </button>
+             </div>
+             <div className="flex flex-wrap gap-2 p-3 bg-off-white/50 rounded-xl border border-light-green/30 min-h-[50px]">
+                {formData.intakes.length === 0 && <span className="text-deep-green/40 text-xs italic p-1">No intakes selected yet.</span>}
+                {formData.intakes.map(intake => (
+                   <motion.span key={intake} initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-light-green rounded-lg text-xs font-bold text-deep-green shadow-sm">
+                     {intake}
+                     <button type="button" onClick={() => setFormData(p => ({...p, intakes: p.intakes.filter(i => i !== intake)}))} className="hover:text-red-500 transition-colors ml-1">
+                       <span className="material-symbols-outlined text-[14px]">close</span>
+                     </button>
+                   </motion.span>
+                ))}
+             </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
              <StyledSelect label="Intake Status" name="intakeStatus" value={formData.intakeStatus || ""} onChange={handleChange} options={["", "Open", "Closed"]} />
           </div>
 
@@ -175,16 +231,6 @@ const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, in
              </div>
           </div>
 
-          <div className="pt-2">
-            <button 
-              onClick={handleEvaluate}
-              className="w-full py-3 bg-primary text-deep-green font-bold rounded-xl border border-deep-green/20 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined">calculate</span>
-              Calculate Based on Profile
-            </button>
-          </div>
-
         </div>
       </FilterSection>
     </div>
@@ -226,11 +272,12 @@ const CollegeSearch = () => {
     budget: 25000,
     destination: "",
     institution: "",
-    institutionType: "",
     programLevel: "",
     fieldOfStudy: "",
-    tuition: "",
-    intakes: "",
+    tuitionMin: 0,
+    tuitionMax: 100000,
+    intakes: [],
+    _intakeInput: "",
     intakeStatus: "",
     programTag: "",
     pgwp: false,
@@ -360,11 +407,12 @@ const CollegeSearch = () => {
         budget: 25000,
         destination: "",
         institution: "",
-        institutionType: "",
         programLevel: "",
         fieldOfStudy: "",
-        tuition: "",
-        intakes: "",
+        tuitionMin: 0,
+        tuitionMax: 100000,
+        intakes: [],
+        _intakeInput: "",
         intakeStatus: "",
         programTag: "",
         pgwp: false,
@@ -421,56 +469,49 @@ const CollegeSearch = () => {
       results = results.filter(uni => uni.name?.toLowerCase().includes(formData.institution.toLowerCase().trim()));
     }
 
-    // 3. Institution Type
-    if (formData.institutionType) {
-       // Assuming 'type' field exists or inferring from name
-       results = results.filter(uni => 
-         uni.name?.toLowerCase().includes(formData.institutionType.toLowerCase()) ||
-         uni.type?.toLowerCase() === formData.institutionType.toLowerCase()
-       );
-    }
-
-    // 4. Program Level
+    // 3. Program Level
     if (formData.programLevel) {
       results = results.filter(uni => uni.courseLevel?.toLowerCase().includes(formData.programLevel.toLowerCase()));
     }
 
-    // 5. Field of Study
-    const courseQuery = formData.fieldOfStudy;
-    if (courseQuery) {
+    // 4. Field of Study
+    if (formData.fieldOfStudy) {
       results = results.filter(uni => 
-        uni.courseName?.toLowerCase().includes(courseQuery.toLowerCase()) || 
-        uni.tags?.some(t => t.toLowerCase().includes(courseQuery.toLowerCase()))
+        uni.fieldOfStudy?.toLowerCase().trim() === formData.fieldOfStudy.toLowerCase().trim()
       );
     }
 
-    // 6. Tuition
-    if (formData.tuition) {
+    // 5. Tuition (Fees Range)
+    if (formData.tuitionMin !== undefined || formData.tuitionMax !== undefined) {
       results = results.filter(uni => {
         const fee = parseFloat((uni.tuitionFee || "0").replace(/[^0-9.]/g, ''));
-        if (formData.tuition === "Low") return fee < 15000;
-        if (formData.tuition === "Medium") return fee >= 15000 && fee <= 30000;
-        if (formData.tuition === "High") return fee > 30000;
-        return true;
+        const minFee = formData.tuitionMin || 0;
+        const maxFee = formData.tuitionMax || 100000;
+        return fee >= minFee && fee <= maxFee;
       });
     }
 
-    // 7. Intakes
-    if (formData.intakes) {
-      results = results.filter(uni => uni.intakes?.toLowerCase().includes(formData.intakes.toLowerCase()));
+    // 6. Intakes
+    if (formData.intakes && formData.intakes.length > 0) {
+      results = results.filter(uni => {
+        const uniIntakes = Array.isArray(uni.intakes) ? uni.intakes : (uni.intakes ? uni.intakes.split(',').map(i => i.trim()) : []);
+        return formData.intakes.some(selectedIntake => 
+          uniIntakes.some(uniIntake => uniIntake.toLowerCase().trim() === selectedIntake.toLowerCase().trim())
+        );
+      });
     }
 
-    // 8. Program Tag
+    // 7. Program Tag
     if (formData.programTag) {
       results = results.filter(uni => uni.tags?.includes(formData.programTag));
     }
 
-    // 9. Checkboxes
+    // 8. Checkboxes
     if (formData.pgwp) {
       results = results.filter(uni => uni.tags?.includes('PGWP') || uni.pgwp === true || uni.pgwp === 'Yes');
     }
 
-    // 10. Sliders - Study Gap
+    // 9. Sliders - Study Gap
     if (formData.studyGap > 0) {
       results = results.filter(uni => {
         if (!uni.gapLimit) return true; 
@@ -478,7 +519,7 @@ const CollegeSearch = () => {
       });
     }
 
-    // 11. Sliders - Backlog
+    // 10. Sliders - Backlog
     if (formData.backlog > 0) {
       results = results.filter(uni => {
         if (!uni.maxBacklogs) return true;
@@ -537,6 +578,9 @@ const CollegeSearch = () => {
                     handleChange={handleChange} 
                     setFormData={setFormData} 
                     handleEvaluate={handleEvaluate}
+                    destinations={[...new Set(colleges.map(c => c.country).filter(Boolean))].sort()}
+                    programLevels={[...new Set(colleges.map(c => c.courseLevel).filter(Boolean))].sort()}
+                    fieldOfStudies={[...new Set(colleges.map(c => c.fieldOfStudy).filter(Boolean))].sort()}
                     // Same dynamic filtering for mobile
                     institutions={[...new Set(
                        colleges
@@ -585,6 +629,9 @@ const CollegeSearch = () => {
              handleChange={handleChange} 
              setFormData={setFormData} 
              handleEvaluate={handleEvaluate}
+             destinations={[...new Set(colleges.map(c => c.country).filter(Boolean))].sort()}
+             programLevels={[...new Set(colleges.map(c => c.courseLevel).filter(Boolean))].sort()}
+             fieldOfStudies={[...new Set(colleges.map(c => c.fieldOfStudy).filter(Boolean))].sort()}
              // Dynamically filter institutions based on selected Destination
              institutions={[...new Set(
                 colleges
@@ -672,64 +719,120 @@ const CollegeSearch = () => {
                      hidden: { opacity: 0, y: 20 },
                      show: { opacity: 1, y: 0 }
                    }}
-                   className="bg-white rounded-2xl border-2 border-transparent hover:border-light-green p-6 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col relative overflow-hidden"
+                   className="bg-white rounded-2xl border border-deep-green/10 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                  >
-                   <div className="absolute -right-12 -top-12 w-32 h-32 bg-light-green/20 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div> 
-
-                   <div className="flex justify-between items-start mb-6 relative z-10">
-                     <div className="size-16 rounded-2xl bg-off-white border border-deep-green/10 flex items-center justify-center shadow-inner text-deep-green">
-                       <span className="material-symbols-outlined text-3xl">{getIcon(college)}</span>
-                     </div>
-                     <span className="bg-light-green/30 text-deep-green text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider border border-light-green/50">
-                       {college.courseLevel || "Program"}
-                     </span>
-                   </div>
-
-                   <div className="mb-6 relative z-10">
-                     <h3 className="text-xl font-extrabold text-deep-green leading-tight mb-2 group-hover:text-deep-green/80 transition-colors">{college.courseName || "Unknown Course"}</h3>
-                     <p className="text-sm font-bold text-deep-green/80 mb-2">{college.name}</p>
-                     <div className="flex items-center gap-1.5 text-deep-green/60 text-xs font-bold">
-                       <span className="material-symbols-outlined text-[16px]">location_on</span>
-                       {college.city}, {college.country}
+                   {/* Header Section */}
+                   <div className="p-6 pb-4 flex justify-between items-start gap-4 border-b border-deep-green/5">
+                     <div className="flex gap-4 flex-1">
+                       {/* University Icon */}
+                       <div className="size-12 rounded-lg bg-off-white border border-deep-green/10 flex items-center justify-center flex-shrink-0">
+                         <span className="material-symbols-outlined text-deep-green text-2xl">apartment</span>
+                       </div>
+                       {/* University Info */}
+                       <div className="flex-1">
+                         <h4 className="text-sm font-bold text-deep-green">{college.name || "Unknown University"}</h4>
+                         <p className="text-xs text-deep-green/60">{college.city || ""}{college.city && college.country ? ", " : ""}{college.country || ""}</p>
+                       </div>
                      </div>
                    </div>
 
-                   <div className="grid grid-cols-2 gap-3 mb-6 p-4 rounded-xl bg-off-white/50 border border-deep-green/5 relative z-10">
-                     <div>
-                       <p className="text-[10px] text-deep-green/40 font-black uppercase tracking-wider mb-1">Requirement</p>
-                       <p className="text-deep-green font-bold text-sm">{college.minScoreOverall ? `${college.minScoreOverall} Overall` : 'N/A'}</p>
+                   {/* Course Info */}
+                   <div className="px-6 pt-4 pb-3">
+                     <p className="text-[10px] font-bold text-deep-green/50 uppercase tracking-wider mb-1">{college.courseLevel || "Program Level"}</p>
+                     <h3 className="text-lg font-extrabold text-deep-green uppercase leading-tight">{college.courseName || "Unknown Course"}</h3>
+                   </div>
+
+                   {/* Tags */}
+                   {college.tags && college.tags.length > 0 && (
+                     <div className="px-6 pb-4 flex flex-wrap gap-2">
+                       {college.tags.slice(0, 3).map((tag, i) => (
+                         <span key={i} className="inline-flex items-center gap-1 text-[11px] font-bold text-deep-green/70">
+                           <span className="material-symbols-outlined text-[14px]">
+                             {tag.includes('Scholarship') ? 'school' : tag.includes('Demand') ? 'trending_up' : 'verified'}
+                           </span>
+                           {tag}
+                         </span>
+                       ))}
                      </div>
-                     <div>
-                       <p className="text-[10px] text-deep-green/40 font-black uppercase tracking-wider mb-1">Tuition</p>
-                       <p className="text-deep-green font-bold text-sm">{college.tuitionFee || "N/A"}</p>
+                   )}
+
+                   <div className="px-6 border-t border-deep-green/5">
+                     {/* Info Rows */}
+                     <div className="py-4 space-y-3">
+                       <div className="flex justify-between items-center">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">Duration</span>
+                         <span className="text-sm font-bold text-deep-green">{college.duration || "N/A"}</span>
+                       </div>
+                       <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">App Fee</span>
+                         <span className="text-sm font-bold text-teal-600">Free Waiver</span>
+                       </div>
+                       <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">Success Chance</span>
+                         <div className="flex items-center gap-1.5">
+                           <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                           <span className="text-sm font-bold text-teal-600">High</span>
+                         </div>
+                       </div>
                      </div>
                    </div>
 
-                   <div className="flex flex-wrap gap-2 mb-8 relative z-10">
-                     {college.ranking && (
-                        <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">
-                            {college.ranking}
-                        </span>
-                     )}
-                     {college.intakes && (
-                        <span className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">
-                            {college.intakes}
-                        </span>
-                     )}
-                     {college.tags && college.tags.map(tag => (
-                       <span key={tag} className="text-[10px] font-bold px-2.5 py-1 bg-white border border-deep-green/10 rounded-md text-deep-green/70">
-                         {tag}
-                       </span>
-                     ))}
+                   {/* Requirement & Tuition Box */}
+                   <div className="mx-6 my-4 p-4 bg-light-green/20 border border-light-green/50 rounded-xl">
+                     <div className="grid grid-cols-2 gap-4">
+                       <div>
+                         <p className="text-[10px] font-bold text-deep-green/60 uppercase tracking-wider mb-2">Requirement</p>
+                         <p className="text-base font-extrabold text-deep-green">{college.minScoreOverall || "N/A"}</p>
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-bold text-deep-green/60 uppercase tracking-wider mb-2">Tuition (1st yr)</p>
+                         <p className="text-base font-extrabold text-deep-green">{college.tuitionFee || "N/A"}</p>
+                       </div>
+                     </div>
                    </div>
 
-                   <button 
-                     onClick={() => handleApply(college._id)}
-                     className="mt-auto w-full py-3.5 rounded-xl border-2 border-deep-green/10 text-deep-green font-bold hover:border-deep-green hover:bg-deep-green hover:text-white transition-all flex items-center justify-center gap-2 group-hover:shadow-md relative z-10"
-                   >
-                     Apply for Application
-                     <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-                   </button>
+                   {/* Available Intakes */}
+                   <div className="px-6 py-4 border-t border-deep-green/5">
+                     <p className="text-[10px] font-bold text-deep-green/50 uppercase tracking-wider mb-3">Available Intakes</p>
+                     <div className="flex gap-3">
+                       {college.intakes ? (
+                         typeof college.intakes === 'string' ? (
+                           college.intakes.split(',').slice(0, 3).map((intake, i) => (
+                             <span key={i} className="px-4 py-2 bg-off-white border border-deep-green/10 rounded-lg text-xs font-bold text-deep-green">
+                               {intake.trim()}
+                             </span>
+                           ))
+                         ) : (
+                           Array.isArray(college.intakes) && college.intakes.slice(0, 3).map((intake, i) => (
+                             <span key={i} className="px-4 py-2 bg-off-white border border-deep-green/10 rounded-lg text-xs font-bold text-deep-green">
+                               {intake}
+                             </span>
+                           ))
+                         )
+                       ) : (
+                         <span className="px-4 py-2 bg-off-white border border-deep-green/10 rounded-lg text-xs font-bold text-deep-green/60">
+                           Check availability
+                         </span>
+                       )}
+                     </div>
+                   </div>
+
+                   {/* Action Buttons */}
+                   <div className="px-6 py-5 flex gap-3 items-center">
+                     <button 
+                       onClick={() => handleApply(college._id)}
+                       className="flex-1 py-3 text-deep-green font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
+                       style={{ backgroundColor: '#cca34a' }}
+                       onMouseEnter={(e) => e.target.style.backgroundColor = '#b8933d'}
+                       onMouseLeave={(e) => e.target.style.backgroundColor = '#cca34a'}
+                     >
+                       Apply Now
+                       <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                     </button>
+                     <button className="text-deep-green/40 hover:text-red-500 transition-colors p-2">
+                       <span className="material-symbols-outlined text-2xl">favorite_border</span>
+                     </button>
+                   </div>
                  </motion.div>
                ))}
              </motion.div>

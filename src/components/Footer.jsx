@@ -11,7 +11,7 @@ const Footer = () => {
             <div className="size-6 flex items-center justify-center rounded bg-primary text-deep-green">
               <span className="material-symbols-outlined text-[16px]">school</span>
             </div>
-            <h2 className="text-xl font-bold">UniSearch.</h2>
+            <h2 className="text-xl font-bold">Anvora.</h2>
           </div>
           <p className="text-off-white/60 text-sm leading-relaxed">
             Empowering students worldwide to find their dream universities and achieve global academic success with expert data and guidance.
@@ -31,10 +31,10 @@ const Footer = () => {
           <h3 className="text-lg font-bold mb-6 text-primary">Contact Information</h3>
           <div className="flex flex-col gap-4 text-off-white/70 md:items-end">
             <a 
-              href="mailto:support@unisearch.com" 
+              href="mailto:support@Anvora.com" 
               className="flex items-center gap-3 hover:text-white transition-colors group"
             >
-              support@unisearch.com
+              support@Anvora.com
               <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">mail</span>
             </a>
             <a 
@@ -55,7 +55,7 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="max-w-[1440px] mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-off-white/40">
-        <p>© 2026 UniSearch Platform. All rights reserved.</p>
+        <p>© 2026 Anvora Platform. All rights reserved.</p>
         <div className="flex gap-6">
           <a className="hover:text-white" href="#">Privacy Policy</a>
           <a className="hover:text-white" href="#">Terms of Service</a>

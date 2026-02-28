@@ -56,14 +56,13 @@ const LandingPage = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="lg:col-span-6 mt-12 lg:mt-0 relative"
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                {/* Replace src with your actual hero image */}
-                <img 
-                  src="/Images/royal.png" 
-                  alt="Students studying" 
-                  className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
+              {/* Plain hero image — removed rounded container, shadow, and dark overlay */}
+              <div className="relative">
+                <img
+                  src="/Images/royal.png"
+                  alt="Students studying"
+                  className="w-full h-auto object-contain transform hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent"></div>
               </div>
               
               {/* Floating Badge Example */}

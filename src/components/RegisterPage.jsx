@@ -155,16 +155,16 @@ const RegisterPage = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 text-primary mb-16">
               <div className="size-10 flex items-center justify-center rounded-xl bg-primary text-deep-green">
-                <span className="material-symbols-outlined text-[24px]">school</span>
+                <img src="/Images/svglogo.svg" alt="Anvora logo" className="w-8 h-8 object-contain" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-off-white">IELTS Prep.</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-off-white">Anvora</h1>
             </div>
 
             <div className="space-y-12">
               <h2 className="text-5xl font-extrabold text-off-white leading-tight">
-                Start your journey to a <span className="text-primary">high band score</span> today.
+                Find your university faster and get <span className="text-primary">accepted</span> there.
               </h2>
-              <div className="space-y-8">
+              {/* <div className="space-y-8">
                 {[
                   { icon: 'assignment_turned_in', title: 'Free Diagnostic Test', desc: 'Identify your strengths and weaknesses with our comprehensive assessment.' },
                   { icon: 'groups', title: 'Expert Community', desc: 'Join 50,000+ students and certified trainers in active learning groups.' },
@@ -180,11 +180,11 @@ const RegisterPage = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="relative z-10 pt-12">
-            <p className="text-off-white/50 text-sm">© 2024 IELTS Prep Platform.</p>
+            <p className="text-off-white/50 text-sm">© 2026 Anvora.</p>
           </div>
         </section>
 
@@ -193,9 +193,9 @@ const RegisterPage = () => {
           <div className="w-full max-w-xl flex flex-col gap-8">
             <div className="lg:hidden flex items-center gap-3 text-deep-green mb-4">
               <div className="size-8 flex items-center justify-center rounded-lg bg-deep-green text-primary">
-                <span className="material-symbols-outlined text-[20px]">school</span>
+                <img src="/Images/svglogo.svg" alt="Anvora logo" className="w-7 h-7 object-contain" />
               </div>
-              <h2 className="text-xl font-bold tracking-tight">IELTS Prep.</h2>
+              <h2 className="text-xl font-bold tracking-tight">Anvora</h2>
             </div>
 
             <div className="flex flex-col gap-2">

@@ -8,17 +8,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#FCCD2A",         // Bright Yellow
-        "deep-green": "#347928",      // Forest Green
-        "light-green": "#C0EBA6",     // Pale Mint Green
-        "off-white": "#FFFBE6",       // Cream Background
-        "background-light": "#FFFBE6",
-        "background-dark": "#1a3c14",  // Dark Forest Green
+        "primary": "#CCA34A",         // Anvora Gold (Buttons/Accents)
+        "deep-green": "#0F4C3A",      // Dark Emerald Green (Primary Brand Color)
+        "light-green": "#E6F4EA",     // Very Pale Mint (Section Backgrounds)
+        "off-white": "#FDFBF7",       // Soft Cream (Hero Background)
+        "background-light": "#FFFFFF", // Pure White
+        "background-dark": "#1A1E2E",  // Deep Navy/Charcoal (Footer)
       },
       fontFamily: {
-        "display": ["Plus Jakarta Sans", "sans-serif"],
-        "body": ["Noto Sans", "sans-serif"]
+        // Changed to Serif for that "University/Premium" look
+        "display": ["Merriweather", "Playfair Display", "serif"], 
+        "body": ["Inter", "system-ui", "sans-serif"]
       },
+      boxShadow: {
+        'soft': '0 4px 20px -2px rgba(15, 76, 58, 0.1)',
+      }
     },
   },
   plugins: [],

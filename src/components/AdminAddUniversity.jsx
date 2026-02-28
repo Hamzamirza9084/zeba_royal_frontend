@@ -3,6 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
+// --- Utility Functions ---
+
+// Generate intake options for 2 years from current date
+const generateIntakeOptions = () => {
+  const intakes = [];
+  const currentDate = new Date();
+  const startMonth = currentDate.getMonth(); // 0-11
+  const startYear = currentDate.getFullYear();
+  
+  // Generate intakes for 24 months (2 years) from now
+  for (let i = 0; i < 24; i++) {
+    const month = (startMonth + i) % 12;
+    const year = startYear + Math.floor((startMonth + i) / 12);
+    
+    const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+    intakes.push(`${monthName} ${year}`);
+  }
+  
+  return intakes;
+};
+
 // --- Reusable Styled Components ---
 
 const StyledInput = ({ label, type = "text", placeholder, className, ...props }) => (
@@ -63,10 +84,11 @@ const AdminAddUniversity = () => {
     
     // Course Details
     courseName: "",
-    courseLevel: "Postgraduate (PG)",
+    courseLevel: "Master's Degree",
+    fieldOfStudy: "",
     duration: "",
     tuitionFee: "",
-    intakes: "",
+    intakes: [],
     
     // Additional
     casPriority: "Medium",
@@ -76,6 +98,7 @@ const AdminAddUniversity = () => {
   });
 
   const [tagInput, setTagInput] = useState("");
+  const [intakeInput, setIntakeInput] = useState("");
 
   // --- SECURITY CHECK: Redirect if not Admin ---
   useEffect(() => {
@@ -119,15 +142,28 @@ const AdminAddUniversity = () => {
     setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
   };
 
+  const addIntake = (e) => {
+    e.preventDefault();
+    if (intakeInput && !formData.intakes.includes(intakeInput)) {
+      setFormData(prev => ({ ...prev, intakes: [...prev.intakes, intakeInput] }));
+      setIntakeInput("");
+    }
+  };
+
+  const removeIntake = (intakeToRemove) => {
+    setFormData(prev => ({ ...prev, intakes: prev.intakes.filter(intake => intake !== intakeToRemove) }));
+  };
+
   const resetForm = () => {
     setFormData({
       name: "", country: "", city: "", ranking: "", website: "",
       minCgpa: "", acceptedDegrees: "", acceptedBackgrounds: "", maxBacklogs: "",
       gapAccepted: "No", gapLimit: "", englishTests: "", minScoreOverall: "", minScoreSection: "",
-      courseName: "", courseLevel: "Postgraduate (PG)", duration: "", tuitionFee: "", intakes: "",
+      courseName: "", courseLevel: "Master's Degree", fieldOfStudy: "", duration: "", tuitionFee: "", intakes: [],
       casPriority: "Medium", internalProcessing: "No", tags: []
     });
     setTagInput("");
+    setIntakeInput("");
   };
 
   const handleSubmit = async (e) => {
@@ -149,13 +185,17 @@ const AdminAddUniversity = () => {
         },
       };
 
-      await axios.post('/api/universities', formData, config);
+      console.log("Submitting formData:", formData);
+      const response = await axios.post('/api/universities', formData, config);
+      console.log("Response:", response.data);
       
       alert("University Added Successfully!");
       resetForm();
+      setIntakeInput("");
     } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.message || "Failed to add university");
+      console.error("Error details:", error);
+      console.error("Error response:", error.response);
+      alert(error.response?.data?.message || error.message || "Failed to add university");
     }
   };
 
@@ -196,9 +236,15 @@ const AdminAddUniversity = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <StyledInput label="University Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. University of Westminster" className="md:col-span-2" />
-                <StyledInput label="Country" name="country" value={formData.country} onChange={handleChange} placeholder="e.g. UK" />
+                <StyledSelect 
+                  label="Destination" 
+                  name="country" 
+                  value={formData.country || ""} 
+                  onChange={handleChange} 
+                  options={["", "United States of America", "Canada", "United Kingdom", "Australia", "Ireland", "Germany"]} 
+                />
                 <StyledInput label="City" name="city" value={formData.city} onChange={handleChange} placeholder="e.g. London" />
-                <StyledInput label="Global Ranking (Optional)" name="ranking" value={formData.ranking} onChange={handleChange} placeholder="e.g. #102 QS" />
+                <StyledInput label="Global Ranking (Optional)" name="ranking" value={formData.ranking} onChange={handleChange} type="number" placeholder="e.g. 102" />
                 <StyledInput label="Website URL" name="website" value={formData.website} onChange={handleChange} placeholder="https://..." />
               </div>
             </section>
@@ -211,10 +257,61 @@ const AdminAddUniversity = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <StyledInput label="Course Name" name="courseName" value={formData.courseName} onChange={handleChange} placeholder="e.g. MSc Data Science" className="md:col-span-2" />
-                <StyledSelect label="Course Level" name="courseLevel" value={formData.courseLevel} onChange={handleChange} options={["Postgraduate (PG)", "Undergraduate (UG)", "Diploma", "PhD"]} />
-                <StyledInput label="Duration" name="duration" value={formData.duration} onChange={handleChange} placeholder="e.g. 1 Year" />
-                <StyledInput label="Tuition Fee" name="tuitionFee" value={formData.tuitionFee} onChange={handleChange} placeholder="e.g. £16,000" />
-                <StyledInput label="Intake Availability" name="intakes" value={formData.intakes} onChange={handleChange} placeholder="e.g. January, September" />
+                
+                <StyledSelect 
+                  label="Program Level" 
+                  name="courseLevel" 
+                  value={formData.courseLevel} 
+                  onChange={handleChange} 
+                  options={["1-Year Post-Secondary Certificate", "2-Year Undergraduate Diploma", "3-Year Undergraduate Advanced Diploma", "3-Year Bachelor's Degree", "Top-up Degree", "4-Year Bachelor's Degree", "Integrated Masters", "Postgraduate Certificate", "Postgraduate Diploma", "Master's Degree", "Doctoral / PhD", "Non-Credential", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "English as Second Language (ESL)"]} 
+                />
+                
+                <StyledSelect 
+                  label="Field of Study" 
+                  name="fieldOfStudy" 
+                  value={formData.fieldOfStudy || ""} 
+                  onChange={handleChange} 
+                  options={["", "Arts", "Business, Management and Economics", "Elementary and High School", "Engineering and Technology", "English for Academic Studies", "Health Sciences, Medicine, Nursing, Paramedic and Kinesiology", "Law, Politics, Social, Community Service and Teaching", "Sciences"]} 
+                />
+                
+                <StyledInput label="Duration" name="duration" value={formData.duration} onChange={handleChange} type="number" placeholder="e.g. 12" />
+                <StyledInput label="Tuition Fee" name="tuitionFee" value={formData.tuitionFee} onChange={handleChange} type="number" placeholder="e.g. 16000" />
+                
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-deep-green mb-2">Intake Month/Year (Multiple)</label>
+                  <div className="flex gap-3 mb-4">
+                    <StyledSelect 
+                      value={intakeInput} 
+                      onChange={(e) => setIntakeInput(e.target.value)}
+                      options={["", ...generateIntakeOptions()]} 
+                      className="flex-1"
+                    />
+                    <button 
+                      onClick={addIntake}
+                      type="button"
+                      className="px-6 rounded-xl bg-deep-green text-white font-bold hover:bg-deep-green/90 transition-colors shadow-lg"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 p-4 bg-off-white/50 rounded-xl border border-light-green/30 min-h-[60px]">
+                    <AnimatePresence>
+                      {formData.intakes.length === 0 && <span className="text-deep-green/40 text-sm italic p-1">No intakes added yet.</span>}
+                      {formData.intakes.map(intake => (
+                        <motion.span 
+                          key={intake}
+                          initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-light-green rounded-lg text-xs font-bold text-deep-green shadow-sm"
+                        >
+                          {intake}
+                          <button type="button" onClick={() => removeIntake(intake)} className="hover:text-red-500 transition-colors">
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                          </button>
+                        </motion.span>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -255,10 +352,10 @@ const AdminAddUniversity = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                  <div className="md:col-span-3">
-                    <StyledInput label="Accepted Tests" name="englishTests" value={formData.englishTests} onChange={handleChange} placeholder="e.g. IELTS, PTE, TOEFL" />
+                    <StyledSelect label="Accepted Tests" name="englishTests" value={formData.englishTests} onChange={handleChange} options={["", "IELTS", "PTE", "TOEFL", "MOI"]} />
                  </div>
-                 <StyledInput label="Min Overall Score" name="minScoreOverall" value={formData.minScoreOverall} onChange={handleChange} placeholder="e.g. 6.5" />
-                 <StyledInput label="Min Section Score" name="minScoreSection" value={formData.minScoreSection} onChange={handleChange} placeholder="e.g. 6.0" className="md:col-span-2" />
+                 <StyledInput label="Min Overall Score" name="minScoreOverall" value={formData.minScoreOverall} onChange={handleChange} type="number" placeholder="e.g. 6.5" step="0.1" />
+                 <StyledInput label="Min Section Score" name="minScoreSection" value={formData.minScoreSection} onChange={handleChange} type="number" placeholder="e.g. 6.0" step="0.1" className="md:col-span-2" />
               </div>
             </section>
 
@@ -272,6 +369,17 @@ const AdminAddUniversity = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                 <StyledSelect label="CAS Priority" name="casPriority" value={formData.casPriority} onChange={handleChange} options={["High", "Medium", "Low"]} />
                 <StyledSelect label="Internal Processing?" name="internalProcessing" value={formData.internalProcessing} onChange={handleChange} options={["Yes", "No"]} />
+                <StyledSelect 
+                  label="Program Tag" 
+                  name="tags" 
+                  value={formData.tags?.[0] || ""} 
+                  onChange={(e) => {
+                    if (e.target.value && !formData.tags.includes(e.target.value)) {
+                      setFormData(prev => ({ ...prev, tags: [...prev.tags, e.target.value] }));
+                    }
+                  }} 
+                  options={["", "Fast Acceptance", "High Job Demand", "Incentivized", "Instant Offer", "Instant Submission", "Loan Available", "New Program", "No UK Interview", "Popular", "Prime", "Scholarships Available", "Top"]} 
+                />
               </div>
 
               {/* Tag System */}

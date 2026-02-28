@@ -76,10 +76,10 @@ const LoginPage = () => {
       {/* Left Section: Visual & Branding (Hidden on mobile) */}
       <section className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 bg-light-green/20">
         <div className="relative z-20 flex items-center gap-3">
-          <div className="size-10 flex items-center justify-center rounded-lg bg-deep-green text-primary">
-            <span className="material-symbols-outlined text-[24px]">school</span>
+          <div className="size-10 flex items-center justify-center rounded-lg  text-primary">
+            <img src="../../public/Images/svglogo.svg" alt="Anvora logo" className="w-8 h-8 object-contain" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">IELTS Prep.</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">Anvora.</h1>
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center">
@@ -92,9 +92,9 @@ const LoginPage = () => {
           
           <div className="mt-12 text-center max-w-sm">
             <h2 className="text-3xl font-extrabold leading-tight mb-4">
-              "Your dream score is just a few practice sessions away."
+              "We have successfully guided over 1,000<sup>+</sup> students to their top universities."
             </h2>
-            <p className="text-deep-green/70 font-medium">Join over 50,000 students achieving their goals.</p>
+            <p className="text-deep-green/70 font-medium">Join over 1,000 students achieving their goals.</p>
           </div>
         </div>
 
@@ -105,10 +105,10 @@ const LoginPage = () => {
       <section className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 ">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-3 mb-12">
-            <div className="size-10 flex items-center justify-center rounded-lg bg-deep-green text-primary">
-              <span className="material-symbols-outlined text-[24px]">school</span>
+            <div className="size-10 flex items-center justify-center rounded-lg  text-primary">
+              <img src="/Images/svglogo.svg" alt="Anvora logo" className="w-8  h-8 object-contain" />
             </div>
-            <h2 className="text-2xl font-extrabold tracking-tight">IELTS Prep.</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight">Anvora.</h2>
           </div>
 
           <div className="mb-10">
