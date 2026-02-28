@@ -34,7 +34,7 @@ const Header = () => {
         {/* Logo Section */}
         <Link to="/" className="flex items-center gap-3 text-deep-green dark:text-primary group">
           <img
-            src="../../public/Images/svglogo.svg"
+            src="/Images/svglogo.svg"
             alt="Anvora Logo"
             className="size-13 object-contain group-hover:scale-110 transition-transform"
           />
