@@ -101,13 +101,6 @@ const LoginPage = () => {
       {/* Right Section: Login Form */}
       <section className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 ">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-3 mb-12">
-            <div className="size-10 flex items-center justify-center rounded-lg  text-primary">
-              <img src="/Images/svglogo.svg" alt="Anvora logo" className="w-8  h-8 object-contain" />
-            </div>
-            <h2 className="text-2xl font-extrabold tracking-tight">Anvora.</h2>
-          </div>
-
           <div className="mb-10">
             <h2 className="text-4xl font-extrabold tracking-tight mb-2">Welcome back</h2>
             <p className="text-deep-green/60 font-medium">Log in to continue your preparation journey.</p>
