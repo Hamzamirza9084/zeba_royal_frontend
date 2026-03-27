@@ -31,17 +31,17 @@ const Footer = () => {
           <h3 className="text-lg font-bold mb-6 text-primary">Contact Information</h3>
           <div className="flex flex-col gap-4 text-off-white/70 md:items-end">
             <a 
-              href="mailto:support@Anvora.com" 
+              href="mailto:info@anvora.in" 
               className="flex items-center gap-3 hover:text-white transition-colors group"
             >
-              support@Anvora.com
+              info@anvora.in
               <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">mail</span>
             </a>
             <a 
-              href="tel:+15559876543" 
+              href="tel:+919978714141" 
               className="flex items-center gap-3 hover:text-white transition-colors group"
             >
-              +1 (555) 987-6543
+              +91 99787 14141
               <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">call</span>
             </a>
             <div className="flex gap-3 mt-4">

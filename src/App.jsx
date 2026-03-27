@@ -3,13 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import LandingPage from './components/LandingPage';
 import Footer from './components/Footer';
-import LoginPage from './components/LoginPage'; 
+import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage'
 import CollegeSearch from './components/CollegeSearch';
 import AdminAddUniversity from './components/AdminAddUniversity';
 import AdminStudentList from './components/AdminStudentList';
 import AdminStudentDetails from './components/AdminStudentDetails';
 import AdminApplications from './components/AdminApplications';
+import AdminUniversitiesList from './components/AdminUniversitiesList';
 import MyApplications from './components/MyApplications';
 import ProfileUpdate from './components/ProfileUpdate';
 
@@ -30,10 +31,10 @@ function App() {
             <LandingPage />
           </MainLayout>
         } />
-        
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        
+
         <Route path="/colleges" element={
           <MainLayout>
             <CollegeSearch />
@@ -53,9 +54,11 @@ function App() {
             <MyApplications />
           </MainLayout>
         } />
-        
+
         {/* Admin Route */}
         <Route path="/admin" element={<AdminAddUniversity />} />
+        <Route path="/admin/universities" element={<AdminUniversitiesList />} />
+        <Route path="/admin/edit-university/:id" element={<AdminAddUniversity />} />
         <Route path="/admin/students" element={<AdminStudentList />} />
         <Route path="/admin/students/:id" element={<AdminStudentDetails />} />
         <Route path="/admin/applications" element={<AdminApplications />} />

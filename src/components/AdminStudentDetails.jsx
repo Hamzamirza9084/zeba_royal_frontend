@@ -120,7 +120,7 @@ const AdminStudentDetails = () => {
                 {student.documents.map((doc, index) => (
                   <li key={index} className="flex items-center justify-between bg-white p-3 rounded-xl border border-deep-green/10 hover:shadow-sm transition-shadow">
                     <a 
-                      href={`http://localhost:5000${doc.fileUrl}`} 
+                      href={`${doc.fileUrl}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-deep-green hover:text-primary font-bold flex items-center gap-2 truncate max-w-[200px]"
@@ -162,6 +162,47 @@ const AdminStudentDetails = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* English Proficiency / Test Scores */}
+        {student.testScores && (
+          <div className="mt-8 bg-off-white/50 p-6 rounded-2xl border border-deep-green/5">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-deep-green mb-4">
+              <span className="material-symbols-outlined">spellcheck</span>
+              English Proficiency
+            </h2>
+            <div className="bg-white p-5 rounded-xl border border-deep-green/10 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-extrabold text-deep-green text-lg">
+                  Status: {student.testScores.englishProficiency === 'proof' ? 'Proof of English Proficiency' : 'Exempt'}
+                </p>
+                {student.testScores.englishProficiency === 'proof' && student.testScores.examType && (
+                  <span className="text-sm font-bold text-deep-green bg-light-green/20 border border-light-green/30 px-3 py-1 rounded-full">
+                    {student.testScores.examType}
+                  </span>
+                )}
+              </div>
+
+              {student.testScores.englishProficiency === 'proof' && (
+                <div className="mt-4 pt-4 border-t border-deep-green/5">
+                  <div className="flex flex-row justify-between items-center bg-off-white p-4 rounded-xl border border-deep-green/5">
+                    <div>
+                      <p className="text-xs font-bold text-deep-green/50 uppercase tracking-wider mb-1">Exam Date</p>
+                      <p className="font-bold text-deep-green text-lg">
+                        {student.testScores.examDate ? new Date(student.testScores.examDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-deep-green/50 uppercase tracking-wider mb-1">Overall Score</p>
+                      <p className="font-black text-primary text-2xl drop-shadow-sm">
+                        {student.testScores.overallScore || 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

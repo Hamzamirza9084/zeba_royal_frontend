@@ -7,6 +7,7 @@ import axios from 'axios';
 
 const ProfileUpdate = () => {
   // --- STATE MANAGEMENT ---
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     documents: [
       
@@ -103,6 +104,7 @@ const ProfileUpdate = () => {
   
   const handlePersonalChange = (e) => {
     const { name, value } = e.target;
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }));
     
     // Special handling for nested passport fields
     if (name === 'passportNumber' || name === 'passportExpiry' || name === 'placeOfBirth') {
@@ -130,6 +132,7 @@ const ProfileUpdate = () => {
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }));
     setFormData(prev => ({
       ...prev,
       address: { ...prev.address, [name]: value }
@@ -172,10 +175,16 @@ const ProfileUpdate = () => {
         return edu;
       })
     }));
+    if (isNested) {
+      if (errors[`edu_${field}_${nestedField}_${index}`]) setErrors(prev => ({ ...prev, [`edu_${field}_${nestedField}_${index}`]: false }));
+    } else {
+      if (errors[`edu_${field}_${index}`]) setErrors(prev => ({ ...prev, [`edu_${field}_${index}`]: false }));
+    }
   };
 
   const handleTestScoreChange = (e) => {
     const { name, value } = e.target;
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: false }));
     setFormData(prev => ({
       ...prev,
       testScores: { ...prev.testScores, [name]: value }
@@ -184,6 +193,67 @@ const ProfileUpdate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let newErrors = {};
+    const p = formData.personalInfo;
+    if (!p.firstName) newErrors['firstName'] = true;
+    if (!p.lastName) newErrors['lastName'] = true;
+    if (!p.dob) newErrors['dob'] = true;
+    if (!p.firstLanguage) newErrors['firstLanguage'] = true;
+    if (!p.citizenship) newErrors['citizenship'] = true;
+    
+    if (p.passport) {
+      if (!p.passport.number) newErrors['passportNumber'] = true;
+      if (!p.passport.expiryDate) newErrors['passportExpiry'] = true;
+      if (!p.passport.placeOfBirth) newErrors['placeOfBirth'] = true;
+    }
+
+    const a = formData.address;
+    if (!a.street) newErrors['street'] = true;
+    if (!a.city) newErrors['city'] = true;
+    if (!a.state) newErrors['state'] = true;
+    if (!a.country) newErrors['country'] = true;
+    if (!a.zipCode) newErrors['zipCode'] = true;
+    if (!a.phone) newErrors['phone'] = true;
+
+    if (formData.education.length > 0) {
+      const e0 = formData.education[0];
+      if (!e0.schoolName) newErrors['edu_schoolName_0'] = true;
+      if (!e0.score) newErrors['edu_score_0'] = true;
+      if (!e0.degreeName) newErrors['edu_degreeName_0'] = true;
+      if (!e0.attendedFrom) newErrors['edu_attendedFrom_0'] = true;
+      if (!e0.attendedTo) newErrors['edu_attendedTo_0'] = true;
+      if (!e0.language) newErrors['edu_language_0'] = true;
+      if (!e0.country) newErrors['edu_country_0'] = true;
+      if (!e0.level) newErrors['edu_level_0'] = true;
+      
+      const sa = e0.schoolAddress || {};
+      if (!sa.street) newErrors['edu_schoolAddress_street_0'] = true;
+      if (!sa.city) newErrors['edu_schoolAddress_city_0'] = true;
+      if (!sa.state) newErrors['edu_schoolAddress_state_0'] = true;
+      if (!sa.zipCode) newErrors['edu_schoolAddress_zipCode_0'] = true;
+    } else {
+        newErrors['no_education'] = true;
+    }
+
+    // test scores
+    if (formData.testScores.englishProficiency === 'proof') {
+       if (!formData.testScores.examType) newErrors['examType'] = true;
+       if (!formData.testScores.overallScore) newErrors['overallScore'] = true;
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      setTimeout(() => {
+        const errorElement = document.querySelector('.border-red-500');
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return;
+    }
+
     try {
       // Get token from user object stored in localStorage
       const user = JSON.parse(localStorage.getItem('user'));
@@ -230,7 +300,7 @@ const ProfileUpdate = () => {
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      const response = await axios.put('http://localhost:5000/api/users/profile', payload, config);
+      const response = await axios.put('/api/users/profile', payload, config);
       const data = response.data;
 
       // Update form with returned user data so inputs reflect saved values
@@ -307,7 +377,7 @@ const ProfileUpdate = () => {
       const fd = new FormData();
       fd.append('file', file);
 
-      const res = await axios.post('http://localhost:5000/api/users/documents', fd, {
+      const res = await axios.post('/api/users/documents', fd, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -338,7 +408,7 @@ const ProfileUpdate = () => {
         if (!token) return alert('Please login to view files');
 
         const filename = doc.fileUrl.split('/').pop();
-        const url = `http://localhost:5000/api/users/documents/view/${encodeURIComponent(filename)}`;
+        const url = `/api/users/documents/view/${encodeURIComponent(filename)}`;
 
         const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` },
@@ -378,7 +448,7 @@ const ProfileUpdate = () => {
       const token = user?.token;
       if (!token) return alert('Please login to delete files');
 
-      const res = await axios.delete('http://localhost:5000/api/users/documents', {
+      const res = await axios.delete('/api/users/documents', {
         data: { fileUrl: doc.fileUrl },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -451,24 +521,24 @@ const ProfileUpdate = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <InputGroup label="First Name" name="firstName" value={formData.personalInfo.firstName} onChange={handlePersonalChange} />
+                <InputGroup label="First Name" name="firstName" value={formData.personalInfo.firstName} onChange={handlePersonalChange} error={errors.firstName} />
                 <InputGroup label="Middle Name" name="middleName" value={formData.personalInfo.middleName} onChange={handlePersonalChange} />
-                <InputGroup label="Last Name" name="lastName" value={formData.personalInfo.lastName} onChange={handlePersonalChange} />
+                <InputGroup label="Last Name" name="lastName" value={formData.personalInfo.lastName} onChange={handlePersonalChange} error={errors.lastName} />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <InputGroup type="date" label="Date of Birth" name="dob" value={formData.personalInfo.dob} onChange={handlePersonalChange} />
-                <InputGroup label="First Language" name="firstLanguage" value={formData.personalInfo.firstLanguage} onChange={handlePersonalChange} />
-                <InputGroup label="Country of Citizenship" name="citizenship" value={formData.personalInfo.citizenship} onChange={handlePersonalChange} />
+                <InputGroup type="date" label="Date of Birth" name="dob" value={formData.personalInfo.dob} onChange={handlePersonalChange} error={errors.dob} />
+                <InputGroup label="First Language" name="firstLanguage" value={formData.personalInfo.firstLanguage} onChange={handlePersonalChange} error={errors.firstLanguage} />
+                <InputGroup label="Country of Citizenship" name="citizenship" value={formData.personalInfo.citizenship} onChange={handlePersonalChange} error={errors.citizenship} />
               </div>
 
               {/* Passport Section */}
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Passport Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <InputGroup label="Passport Number" name="passportNumber" value={formData.personalInfo.passport.number} onChange={handlePersonalChange} />
-                  <InputGroup type="date" label="Expiry Date" name="passportExpiry" value={formData.personalInfo.passport.expiryDate} onChange={handlePersonalChange} />
-                  <InputGroup label="Place of Birth" name="placeOfBirth" value={formData.personalInfo.passport.placeOfBirth} onChange={handlePersonalChange} />
+                  <InputGroup label="Passport Number" name="passportNumber" value={formData.personalInfo.passport.number} onChange={handlePersonalChange} error={errors.passportNumber} />
+                  <InputGroup type="date" label="Expiry Date" name="passportExpiry" value={formData.personalInfo.passport.expiryDate} onChange={handlePersonalChange} error={errors.passportExpiry} />
+                  <InputGroup label="Place of Birth" name="placeOfBirth" value={formData.personalInfo.passport.placeOfBirth} onChange={handlePersonalChange} error={errors.placeOfBirth} />
                 </div>
               </div>
 
@@ -522,13 +592,13 @@ const ProfileUpdate = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-6">
-                <InputGroup label="Street Address" name="street" value={formData.address.street} onChange={handleAddressChange} />
+                <InputGroup label="Street Address" name="street" value={formData.address.street} onChange={handleAddressChange} error={errors.street} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <InputGroup label="City" name="city" value={formData.address.city} onChange={handleAddressChange} />
-                <InputGroup label="State/Province" name="state" value={formData.address.state} onChange={handleAddressChange} />
-                <InputGroup label="Country" name="country" value={formData.address.country} onChange={handleAddressChange} />
-                <InputGroup label="Zip Code" name="zipCode" value={formData.address.zipCode} onChange={handleAddressChange} />
+                <InputGroup label="City" name="city" value={formData.address.city} onChange={handleAddressChange} error={errors.city} />
+                <InputGroup label="State/Province" name="state" value={formData.address.state} onChange={handleAddressChange} error={errors.state} />
+                <InputGroup label="Country" name="country" value={formData.address.country} onChange={handleAddressChange} error={errors.country} />
+                <InputGroup label="Zip Code" name="zipCode" value={formData.address.zipCode} onChange={handleAddressChange} error={errors.zipCode} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
@@ -545,7 +615,7 @@ const ProfileUpdate = () => {
                   </select>
                 </div>
                 <div className="md:col-span-3">
-                  <InputGroup label="Phone Number" name="phone" value={formData.address.phone} onChange={handleAddressChange} />
+                  <InputGroup label="Phone Number" name="phone" value={formData.address.phone} onChange={handleAddressChange} error={errors.phone} />
                 </div>
               </div>
             </div>
@@ -577,7 +647,7 @@ const ProfileUpdate = () => {
                       <select 
                         value={edu.country}
                         onChange={(e) => handleEducationChange(index, 'country', e.target.value)}
-                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                        className={`w-full rounded-lg border shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 ${errors[`edu_country_${index}`] ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'}`}
                       >
                         <option value="India">India</option>
                         <option value="USA">USA</option>
@@ -590,6 +660,7 @@ const ProfileUpdate = () => {
                         value={edu.schoolName}
                         onChange={(e) => handleEducationChange(index, 'schoolName', e.target.value)}
                         placeholder="Search for school..."
+                        error={errors[`edu_schoolName_${index}`]}
                       />
                     </div>
                     <div>
@@ -597,7 +668,7 @@ const ProfileUpdate = () => {
                       <select 
                         value={edu.level}
                         onChange={(e) => handleEducationChange(index, 'level', e.target.value)}
-                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                        className={`w-full rounded-lg border shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 ${errors[`edu_level_${index}`] ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'}`}
                       >
                         <option value="High School">High School</option>
                         <option value="Bachelors">Bachelor's Degree</option>
@@ -635,6 +706,7 @@ const ProfileUpdate = () => {
                         "e.g. A+"
                       }
                       type={edu.gradingScheme === 'Letter' ? "text" : "number"}
+                      error={errors[`edu_score_${index}`]}
                     />
 
                     {edu.gradingScheme !== 'Percentage' && (
@@ -664,13 +736,13 @@ const ProfileUpdate = () => {
 
                   {/* Row 3 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <InputGroup label="Primary Language" value={edu.language} onChange={(e) => handleEducationChange(index, 'language', e.target.value)} />
-                    <InputGroup type="date" label="Attended From" value={edu.attendedFrom} onChange={(e) => handleEducationChange(index, 'attendedFrom', e.target.value)} />
-                    <InputGroup type="date" label="Attended To" value={edu.attendedTo} onChange={(e) => handleEducationChange(index, 'attendedTo', e.target.value)} />
+                    <InputGroup label="Primary Language" value={edu.language} onChange={(e) => handleEducationChange(index, 'language', e.target.value)} error={errors[`edu_language_${index}`]} />
+                    <InputGroup type="date" label="Attended From" value={edu.attendedFrom} onChange={(e) => handleEducationChange(index, 'attendedFrom', e.target.value)} error={errors[`edu_attendedFrom_${index}`]} />
+                    <InputGroup type="date" label="Attended To" value={edu.attendedTo} onChange={(e) => handleEducationChange(index, 'attendedTo', e.target.value)} error={errors[`edu_attendedTo_${index}`]} />
                   </div>
 
                   {/* Row 4 */}
-                  <InputGroup label="Degree Name" value={edu.degreeName} onChange={(e) => handleEducationChange(index, 'degreeName', e.target.value)} />
+                  <InputGroup label="Degree Name" value={edu.degreeName} onChange={(e) => handleEducationChange(index, 'degreeName', e.target.value)} error={errors[`edu_degreeName_${index}`]} />
 
                   {/* Checkboxes & Logic */}
                   <div className="space-y-4 pt-2">
@@ -713,18 +785,20 @@ const ProfileUpdate = () => {
                           label="Address" 
                           value={edu.schoolAddress.street} 
                           onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'street')} 
+                          error={errors[`edu_schoolAddress_street_${index}`]}
                         />
                         <InputGroup 
                           label="City/Town" 
                           value={edu.schoolAddress.city} 
                           onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'city')} 
+                          error={errors[`edu_schoolAddress_city_${index}`]}
                         />
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Province/State</label>
                           <select 
                             value={edu.schoolAddress.state}
                             onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'state')}
-                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                            className={`w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5 ${errors[`edu_schoolAddress_state_${index}`] ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'}`}
                           >
                             <option value="">Select State</option>
                             <option value="NY">New York</option>
@@ -737,6 +811,7 @@ const ProfileUpdate = () => {
                           label="Postal/Zip Code" 
                           value={edu.schoolAddress.zipCode} 
                           onChange={(e) => handleEducationChange(index, 'schoolAddress', e.target.value, true, 'zipCode')} 
+                          error={errors[`edu_schoolAddress_zipCode_${index}`]}
                         />
                       </div>
                     </div>
@@ -795,16 +870,17 @@ const ProfileUpdate = () => {
                       name="examType"
                       value={formData.testScores.examType}
                       onChange={handleTestScoreChange}
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5"
+                      className={`w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2.5 ${errors.examType ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'}`}
                     >
                       <option value="">Select Exam</option>
-                      <option value="Duolingo">Duolingo English Test</option>
                       <option value="IELTS">IELTS</option>
+                      <option value="PTE">PTE</option>
                       <option value="TOEFL">TOEFL</option>
+                      <option value="DET">DET</option>
                     </select>
                   </div>
                   <InputGroup type="date" label="Date of Exam" name="examDate" value={formData.testScores.examDate} onChange={handleTestScoreChange} />
-                  <InputGroup label="Overall Score" name="overallScore" value={formData.testScores.overallScore} onChange={handleTestScoreChange} />
+                  <InputGroup label="Overall Score" name="overallScore" value={formData.testScores.overallScore} onChange={handleTestScoreChange} error={errors.overallScore} />
                 </div>
               )}
             </div>
@@ -827,9 +903,9 @@ const ProfileUpdate = () => {
 };
 
 // Reusable Input Component
-const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, required = false, ...props }) => (
+const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, required = false, error, ...props }) => (
   <div className="w-full">
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label} {required && <span className="text-red-500">*</span>}</label>
+    <label className={`block text-sm font-medium mb-1 ${error ? 'text-red-500' : 'text-gray-700'}`}>{label} {required && <span className="text-red-500">*</span>}</label>
     <div className="relative">
       <input
         type={type}
@@ -837,11 +913,12 @@ const InputGroup = ({ label, type = "text", value, onChange, name, placeholder, 
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-lg border-gray-300 border shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 transition"
+        className={`w-full rounded-lg border shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3 transition ${error ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-300'}`}
         {...props}
       />
-      {type === 'date' && <Calendar className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />}
+      {type === 'date' && <Calendar className={`absolute right-3 top-2.5 w-5 h-5 pointer-events-none ${error ? 'text-red-400' : 'text-gray-400'}`} />}
     </div>
+    {error && <p className="text-red-500 text-xs mt-1 font-medium">This field is required</p>}
   </div>
 );
 
