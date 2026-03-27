@@ -571,7 +571,6 @@ const AdminAddUniversity = () => {
               </div>
             </div>
           </section>
-
           {/* 3. Admission Rules */}
           <section className="bg-white p-6 rounded-2xl border-2 border-light-green/50 shadow-sm">
             <h3 className="flex items-center gap-2 text-lg font-bold text-deep-green mb-6 border-b border-light-green/30 pb-2">

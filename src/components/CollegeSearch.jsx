@@ -187,13 +187,27 @@ const FilterContent = ({ formData, handleChange, setFormData, handleEvaluate, in
           </div>
 
           <div>
-            <div className="flex items-center gap-1 mb-1.5"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Program Tag</label><span className="material-symbols-outlined text-[16px] text-deep-green/60" title="Tag">info</span></div>
-            <select name="programTag" value={formData.programTag || ""} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green text-sm font-medium focus:outline-none focus:border-deep-green">
-              <option value="">Select Tag</option>
-              {["Fast Acceptance", "High Job Demand", "Incentivized", "Instant Offer", "Instant Submission", "Loan Available", "New Program", "No UK Interview", "Popular", "Prime", "Scholarships Available", "Top"].map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
+             <div className="flex items-center gap-1 mb-1.5"><label className="text-xs font-bold text-deep-green/80 uppercase tracking-wide">Program Tag</label><span className="material-symbols-outlined text-[16px] text-deep-green/60" title="Tag">info</span></div>
+             <select name="programTag" value={formData.programTag || ""} onChange={handleChange} className="w-full px-4 py-2.5 rounded-xl border-2 border-light-green bg-white text-deep-green text-sm font-medium focus:outline-none focus:border-deep-green"><option value="">Select Tag</option><option>Co-op</option><option>Internship</option></select>
+          </div>
+
+          {/* Checkboxes */}
+          <div className="space-y-3 pt-4 border-t border-light-green/30">
+            {[
+              { name: 'pgwp', label: 'Only programs eligible for PGWP', info: 'Post-Graduation Work Permit' },
+              { name: 'visaCap', label: 'Exempt from Canadian Visa Cap', info: 'Cap Exemption', badge: 'NEW' },
+              { name: 'freeApplications', label: 'Only programs with free applications' },
+              { name: 'excludePathway', label: 'Exclude Pathway Programs', info: 'Pathway Exclusion', badge: 'NEW' }
+            ].map((item) => (
+              <label key={item.name} className="flex items-center gap-3 cursor-pointer group">
+                <input type="checkbox" name={item.name} checked={formData[item.name] || false} onChange={handleChange} className="w-4 h-4 rounded accent-deep-green cursor-pointer" />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-medium text-deep-green group-hover:text-deep-green/80 transition-colors">{item.label}</span>
+                  {item.info && <span className="material-symbols-outlined text-[16px] text-deep-green/50" title={item.info}>info</span>}
+                  {item.badge && <span className="px-1.5 py-0.5 bg-primary text-deep-green text-[9px] font-bold rounded-full">{item.badge}</span>}
+                </div>
+              </label>
+            ))}
           </div>
 
           {/* Sliders */}
@@ -830,7 +844,11 @@ const CollegeSearch = () => {
                 Filters
               </button>
 
-
+               <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-deep-green/10 bg-white text-deep-green font-bold hover:bg-deep-green hover:text-white transition-all shadow-sm hover:shadow-md">
+                 <span className="material-symbols-outlined text-[20px]">download</span>
+                 <span className="hidden sm:inline">Export PDF</span>
+                 <span className="sm:hidden">PDF</span>
+               </button>
             </div>
           </div>
 
@@ -905,30 +923,26 @@ const CollegeSearch = () => {
                     </div>
                   )}
 
-                  <div className="px-6 border-t border-deep-green/5">
-                    {/* Info Rows */}
-                    <div className="py-4 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-deep-green/50 uppercase">Duration</span>
-                        <span className="text-sm font-bold text-deep-green">
-                          {college.duration 
-                            ? (/^\d+$/.test(college.duration.toString().trim()) ? `${college.duration} Months` : college.duration)
-                            : "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
-                        <span className="text-xs font-bold text-deep-green/50 uppercase">App Fee</span>
-                        <span className="text-sm font-bold text-teal-600">Free Waiver</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
-                        <span className="text-xs font-bold text-deep-green/50 uppercase">Success Chance</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-                          <span className="text-sm font-bold text-teal-600">High</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                   <div className="px-6 border-t border-deep-green/5">
+                     {/* Info Rows */}
+                     <div className="py-4 space-y-3">
+                       <div className="flex justify-between items-center">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">Duration</span>
+                         <span className="text-sm font-bold text-deep-green">{college.duration || "N/A"}</span>
+                       </div>
+                       <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">App Fee</span>
+                         <span className="text-sm font-bold text-teal-600">Free Waiver</span>
+                       </div>
+                       <div className="flex justify-between items-center border-t border-deep-green/5 pt-3">
+                         <span className="text-xs font-bold text-deep-green/50 uppercase">Success Chance</span>
+                         <div className="flex items-center gap-1.5">
+                           <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                           <span className="text-sm font-bold text-teal-600">High</span>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
 
                   {/* Requirement & Tuition Box */}
                   <div className="mx-6 my-4 p-4 bg-light-green/20 border border-light-green/50 rounded-xl">
